@@ -17,7 +17,7 @@ Deno.serve(async (req)=>{
   const {data:pa}=await admin.from("platform_admins").select("status").eq("id",actor.id).single();
   if(!pa||pa.status!=="active") return Response.json({error:"Super Admin access required"},{status:403,headers:CORS});
   const body=await req.json();
-  const name=String(body.name||"").trim(),ownerName=String(body.owner_name||"").trim(),requestedLogin=String(body.login_id||"").trim(),password=String(body.password||"");
+  const name=String(body.name||"").trim(),ownerName=String(body.owner_name||"").trim(),ownerPhone=String(body.owner_phone||"").trim(),requestedLogin=String(body.login_id||"").trim(),password=String(body.password||"");
   if(!name||!ownerName||password.length<8) return Response.json({error:"Gym name, owner name and an 8+ character password are required"},{status:400,headers:CORS});
   const base=(requestedLogin||name).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";
   let loginId=requestedLogin.toUpperCase().replace(/\s+/g,"").replace(/[^A-Z0-9_-]/g,"");
@@ -30,7 +30,7 @@ Deno.serve(async (req)=>{
   const email=loginId.toLowerCase()+"@gymos.local";
   const {data:newUser,error:ue}=await admin.auth.admin.createUser({email,password,email_confirm:true});
   if(ue){await admin.from("gyms").delete().eq("id",gym.id);return Response.json({error:ue.message},{status:400,headers:CORS});}
-  const {data:profile,error:pe}=await admin.from("profiles").insert({id:newUser.user.id,gym_id:gym.id,login_id:loginId,full_name:ownerName,role:"admin",status:"active"}).select().single();
+  const {data:profile,error:pe}=await admin.from("profiles").insert({id:newUser.user.id,gym_id:gym.id,login_id:loginId,full_name:ownerName,role:"admin",status:"active",phone:ownerPhone||null,password_change_required:true,password_reset_at:new Date().toISOString()}).select().single();
   if(pe){await admin.auth.admin.deleteUser(newUser.user.id);await admin.from("gyms").delete().eq("id",gym.id);return Response.json({error:pe.message},{status:400,headers:CORS});}
-  return Response.json({gym,owner:profile},{headers:{...CORS,"Content-Type":"application/json"}});
+  return Response.json({gym,owner:profile,temporary_password:password,password_change_required:true},{headers:{...CORS,"Content-Type":"application/json"}});
 });
