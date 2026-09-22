@@ -109,3 +109,42 @@
  .platform-sidebar .logout{display:block;width:auto;margin:0;padding:9px 10px;border:1px solid #334155;border-radius:9px;background:#ffffff08;color:#cbd5e1;font-size:11px}
  .platform-sidebar nav{margin-left:4px}
 }
+
+/* Super Admin clean topbar + drill-down UI */
+.platform-shell{min-height:100vh;background:#f3f5f9}
+.platform-topbar{height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#0b1220;color:#fff;border-bottom:1px solid #202938}
+.platform-brand{display:flex;align-items:center;gap:10px}
+.platform-brand b{display:block;font-size:14px;letter-spacing:1.5px}
+.platform-brand small{display:block;color:#8995a7;font-size:9px;letter-spacing:1.7px;margin-top:3px}
+.topbar-signout{border:1px solid #334155;background:#ffffff08;color:#e2e8f0;border-radius:9px;padding:9px 14px;font-size:12px}
+.platform-content{padding-top:28px}
+.platform-content .platform-notice{min-height:0}
+.clickable-card{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.clickable-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px #11182718!important}
+.clickable-row{cursor:pointer}
+.clickable-row:hover{background:#f8fafc}
+.directory-list{display:flex;flex-direction:column;gap:8px}
+.directory-item{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:13px 14px;border:1px solid #e5e7eb;border-radius:11px;background:#fff}
+.directory-item:hover{background:#f8fafc}
+.directory-item b,.directory-item small{display:block}
+.directory-item b{font-size:13px}
+.directory-item small{font-size:11px;color:#8a94a4;margin-top:3px}
+.directory-item strong{font-size:20px;color:#98a2b3}
+.directory-empty{text-align:center;padding:30px;color:#8a94a4;font-size:12px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.detail-grid>div{padding:12px 13px;border:1px solid #e5e7eb;border-radius:10px;background:#fafbfd}
+.detail-grid>div span{display:block;color:#8a94a4;font-size:10px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.detail-grid>div b{font-size:13px}
+.detail-field{grid-column:1/-1}
+.detail-field input{margin-top:6px}
+.detail-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+@media(max-width:650px){
+ .platform-topbar{height:66px;padding:0 15px}
+ .platform-brand b{font-size:12px}
+ .platform-brand small{font-size:8px}
+ .platform-content{padding:18px 13px 35px}
+ .detail-grid{grid-template-columns:1fr}
+ .detail-field{grid-column:auto}
+ .detail-actions{flex-direction:column-reverse}
+ .detail-actions>*{width:100%;text-align:center}
+}
