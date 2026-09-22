@@ -141,26 +141,41 @@ check_in_attendance():
 
 ## 6. Frontend structure
 
-The current V1 is intentionally dependency-light:
+V1 deliberately stays dependency-light:
 - React
 - Vite
 - Supabase JS
 
-The next structural refactor should split the large UI file into:
-- src/app/ — boot, routing, auth gates
-- src/layouts/ — admin, platform, portal shells
-- src/features/members/
-- src/features/memberships/
-- src/features/payments/
-- src/features/attendance/
-- src/features/reports/
-- src/features/platform/
-- src/components/ — reusable UI
-- src/lib/ — date, permissions, API helpers, formatting
+The admin shell uses grouped navigation and a mobile drawer. The product intentionally does not add a second frontend framework, global state library, microservices, or a separate API server. For this size of product, those layers would add operational work without solving a current user problem.
+
+The large admin module is treated as the V1 application boundary. When the codebase materially grows, it can be split by feature without changing the database contract:
+- app/auth/layouts
+- members
+- memberships
+- payments
+- attendance
+- reports
+- platform
+- shared UI/utilities
+
+The important architectural boundary is the backend contract, not the number of React files. Keep the browser thin and keep authorization, money, attendance and tenant rules server-authoritative.
 
 Do not introduce a state-management library until real cross-page state requires it.
 
-## 7. Release gates
+## 7. Simplicity rule
+
+GymOS V1 is intentionally limited to the daily work a small gym actually needs:
+- members and trainers
+- check-in/check-out
+- memberships
+- payments and dues
+- basic reports
+- reminders
+- gym settings
+
+Do not add classes, workout programming, POS, inventory, CRM, marketing automation, payroll, multi-branch workflows, door hardware, or other enterprise features to V1 merely because larger competitors offer them. Those are future modules only if real customers require them.
+
+## 8. Release gates
 
 Every release must pass:
 - build
