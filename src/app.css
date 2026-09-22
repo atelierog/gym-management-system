@@ -337,3 +337,8 @@
 .portal-actions{display:grid;gap:6px;margin-top:auto}
 .portal-actions .logout{position:static;right:auto;top:auto;margin:0;width:100%;border-radius:9px}
 @media(max-width:650px){.portal-actions .logout{position:static;margin:0}.portal-actions{position:static}}
+
+/* Final mobile portal controls: never overlap */
+.portal-actions{display:flex;gap:8px;flex-wrap:wrap}
+.portal-actions .logout{position:static;right:auto;top:auto}
+@media(max-width:700px){.portal-actions{display:grid;grid-template-columns:1fr 1fr}.portal-actions .logout{width:100%;min-height:42px}}
