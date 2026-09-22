@@ -330,3 +330,10 @@
  .plan-manager-row>div:last-child{width:100%;justify-content:stretch}
  .plan-manager-row>div:last-child button{flex:1}
 }
+
+/* Foundation UX corrections */
+.dashboard-card-button{font:inherit;color:inherit;text-decoration:none;display:block;border:1px solid #e5e7eb;background:#fff;appearance:none}
+.dashboard-card-button:hover{border-color:#cbd5e1}
+.portal-actions{display:grid;gap:6px;margin-top:auto}
+.portal-actions .logout{position:static;right:auto;top:auto;margin:0;width:100%;border-radius:9px}
+@media(max-width:650px){.portal-actions .logout{position:static;margin:0}.portal-actions{position:static}}
