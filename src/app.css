@@ -80,3 +80,26 @@
  .platform-cards{grid-template-columns:1fr 1fr}
  .platform-panel{padding:15px}
 }
+
+/* Mobile platform layout: compact top bar instead of a tall sidebar */
+@media(max-width:650px){
+ .platform-app{min-height:100vh}
+ .platform-sidebar{display:flex;flex-direction:row;align-items:center;gap:12px;width:100%;height:92px;min-height:92px;padding:12px 14px;border-right:0;border-bottom:1px solid #273142;position:relative}
+ .platform-logo{border:0;padding:0;gap:8px;flex-shrink:0}
+ .platform-mark{width:34px;height:34px;border-radius:9px}
+ .platform-logo b{font-size:12px}
+ .platform-logo small{font-size:8px}
+ .platform-sidebar nav{margin:0 0 0 auto}
+ .platform-sidebar nav button{padding:10px 13px;font-size:13px}
+ .platform-sidebar .sidebar-bottom,.platform-user{display:none}
+ .platform-main{padding:20px 13px 35px}
+ .platform-header{margin-bottom:16px}
+ .platform-header h2{font-size:28px;margin-top:4px}
+ .platform-header p{font-size:12px;max-width:230px}
+ .platform-hero{padding:20px 18px;border-radius:16px}
+ .platform-hero h1{font-size:21px}
+ .platform-hero p{font-size:12px;line-height:1.45}
+ .platform-cards .stat{padding:17px}
+ .platform-panel .tr{min-width:680px}
+}
+.notice-error{background:#fff1f2;color:#9f1239;border-color:#fecdd3}
