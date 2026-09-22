@@ -109,5 +109,6 @@ alter table public.audit_logs enable row level security;
 
 -- The exact production RLS policies, helper functions, checkout function,
 -- audit function, constraints, indexes and scheduled functions are maintained
--- in the hardening migration above. Do not recreate the old prototype
--- tenant_* policies from earlier versions of this file.
+-- in the hardening migration above. The platform super-admin layer is maintained
+-- in supabase/migrations/20260922_platform_super_admin.sql. Do not recreate old
+-- prototype tenant_* policies from earlier versions of this file.
