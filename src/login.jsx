@@ -19,7 +19,7 @@ export default function Login({onLogin}){
   e.preventDefault();setError("");
   if(setupPassword.length<8){setError("Password must be at least 8 characters.");return}
   setSetupBusy(true);
-  const {data,error}=await supabase.auth.signUp({email:SUPER_ADMIN_EMAIL,password:setupPassword,email_confirmed:false});
+  const {data,error}=await supabase.auth.signUp({email:SUPER_ADMIN_EMAIL,password:setupPassword});
   if(error){setSetupBusy(false);setError(error.message||"Could not create Super Admin account.");return}
   if(data.session){
     const {error:be}=await bootstrapSuperAdmin();
