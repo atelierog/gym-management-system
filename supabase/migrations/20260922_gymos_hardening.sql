@@ -1,6 +1,20 @@
 -- GymOS V1 hardening migration.
 -- Applied to production on 2026-09-22. Keep this file as the database change record.
 
+create schema if not exists private;
+
+create or replace function private.current_gym_id()
+returns uuid language sql stable security definer set search_path=''
+as $ select public.profiles.gym_id from public.profiles where public.profiles.id=(select auth.uid()) $;
+revoke all on function private.current_gym_id() from public;
+grant execute on function private.current_gym_id() to authenticated;
+
+create or replace function private.current_role()
+returns text language sql stable security definer set search_path=''
+as $ select public.profiles.role from public.profiles where public.profiles.id=(select auth.uid()) $;
+revoke all on function private.current_role() from public;
+grant execute on function private.current_role() to authenticated;
+
 create table if not exists public.audit_logs (
   id uuid primary key default gen_random_uuid(),
   gym_id uuid not null references public.gyms(id) on delete cascade,
