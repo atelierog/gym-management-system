@@ -298,3 +298,4 @@
  .report-mini-row small{text-align:left}
  .back-button{width:32px;height:32px}
 }
+.report-bar-row i.bar-major{background:linear-gradient(90deg,#172033 0 72%,#e9edf2 72%)}.report-bar-row i.bar-used{background:linear-gradient(90deg,#172033 0 38%,#e9edf2 38%)}.report-bar-row i.bar-empty{background:#edf1f5}
