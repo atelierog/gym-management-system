@@ -1,0 +1,7 @@
+/* Prevent stale SPA shell caching while deployments change */
+/
+  Cache-Control: no-store, max-age=0
+/index.html
+  Cache-Control: no-store, max-age=0
+/sw.js
+  Cache-Control: no-store, max-age=0
