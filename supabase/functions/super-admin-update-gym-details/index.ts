@@ -1,0 +1,19 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+Deno.serve(async(req)=>{
+  if(req.method!=="POST") return Response.json({error:"Method not allowed"},{status:405});
+  const auth=req.headers.get("Authorization"); if(!auth) return Response.json({error:"Unauthorized"},{status:401});
+  const admin=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const token=auth.replace("Bearer ",""); const {data:{user:actor},error:ae}=await admin.auth.getUser(token);
+  if(ae||!actor) return Response.json({error:"Unauthorized"},{status:401});
+  const {data:platform}=await admin.from("platform_admins").select("id,status").eq("id",actor.id).single();
+  if(!platform||platform.status!=="active") return Response.json({error:"Super Admin access required"},{status:403});
+  const b=await req.json(),gymId=String(b.gym_id||""); if(!gymId) return Response.json({error:"Gym ID is required"},{status:400});
+  const phone=String(b.phone||"").trim(),plan=String(b.platform_plan||"Not assigned").trim().slice(0,80)||"Not assigned";
+  const {error:pe}=await admin.from("profiles").update({phone:phone||null}).eq("gym_id",gymId).eq("role","admin");
+  if(pe) return Response.json({error:pe.message},{status:400});
+  const {data:gym,error:ge}=await admin.from("gyms").update({platform_plan:plan}).eq("id",gymId).select().single();
+  if(ge) return Response.json({error:ge.message},{status:400});
+  await admin.from("audit_logs").insert({gym_id:gymId,actor_id:actor.id,action:"update_platform_gym_details",entity:"gym",entity_id:gymId,details:{platform_plan:plan}});
+  return Response.json({gym});
+});
