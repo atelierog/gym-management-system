@@ -45,9 +45,9 @@ with check (gym_id=(select private.current_gym_id()));
 drop policy if exists attendance_update_self on public.attendance;
 revoke update on public.attendance from authenticated;
 
-create or replace function public.manual_checkout_attendance(p_attendance_id uuid)
+create or replace function private.manual_checkout_attendance(p_attendance_id uuid)
 returns uuid language plpgsql security definer set search_path=''
-as $$
+as $
 declare v_id uuid;
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
@@ -60,13 +60,23 @@ begin
   returning public.attendance.id into v_id;
   if v_id is null then raise exception 'Open attendance record not found'; end if;
   return v_id;
-end $$;
+end $;
+revoke all on function private.manual_checkout_attendance(uuid) from public;
+grant execute on function private.manual_checkout_attendance(uuid) to authenticated;
+
+create or replace function public.manual_checkout_attendance(p_attendance_id uuid)
+returns uuid language sql security invoker set search_path=''
+as $ select private.manual_checkout_attendance(p_attendance_id) $;
 revoke all on function public.manual_checkout_attendance(uuid) from public;
 grant execute on function public.manual_checkout_attendance(uuid) to authenticated;
 
+drop policy if exists audit_insert_self on public.audit_logs;
+create policy audit_insert_self on public.audit_logs for insert to authenticated
+with check(gym_id=(select private.current_gym_id()) and actor_id=(select auth.uid()));
+
 create or replace function public.record_audit(p_action text,p_entity text default null,p_entity_id uuid default null,p_details jsonb default '{}'::jsonb)
-returns uuid language plpgsql security definer set search_path=''
-as $$
+returns uuid language plpgsql security invoker set search_path=''
+as $
 declare v_id uuid; v_gym uuid;
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
@@ -76,7 +86,7 @@ begin
   values(v_gym,auth.uid(),p_action,p_entity,p_entity_id,coalesce(p_details,'{}'::jsonb))
   returning id into v_id;
   return v_id;
-end $$;
+end $;
 revoke all on function public.record_audit(text,text,uuid,jsonb) from public;
 grant execute on function public.record_audit(text,text,uuid,jsonb) to authenticated;
 
