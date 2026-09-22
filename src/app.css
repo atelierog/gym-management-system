@@ -299,3 +299,34 @@
  .back-button{width:32px;height:32px}
 }
 .report-bar-row i.bar-major{background:linear-gradient(90deg,#172033 0 72%,#e9edf2 72%)}.report-bar-row i.bar-used{background:linear-gradient(90deg,#172033 0 38%,#e9edf2 38%)}.report-bar-row i.bar-empty{background:#edf1f5}
+/* Mobile-safe modals and membership plan manager */
+.overlay{position:fixed;inset:0;background:#11182799;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:12px 12px max(24px,env(safe-area-inset-bottom));z-index:20;-webkit-overflow-scrolling:touch}
+.modal{width:min(480px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:14px;padding:20px;margin:auto 0}
+.section-actions{display:flex;gap:8px;flex-wrap:wrap}
+.plan-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.plan-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:15px;border:1px solid #e3e8ef;border-radius:14px;background:#fff;box-shadow:0 6px 18px #17203308}
+.plan-card.plan-disabled{opacity:.62}
+.plan-card small,.plan-card b,.plan-card span{display:block}
+.plan-card small{font-size:9px;letter-spacing:1px;color:#7b8493;font-weight:800}
+.plan-card b{margin-top:5px;font-size:15px;color:#172033}
+.plan-card span{margin-top:3px;font-size:13px;color:#667085}
+.plan-card-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.plan-manager{display:grid;gap:9px}
+.plan-manager-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid #e5e9ef;border-radius:12px;background:#fafbfd}
+.plan-manager-row b,.plan-manager-row span{display:block}
+.plan-manager-row b{font-size:13px}
+.plan-manager-row span{margin-top:3px;color:#7b8493;font-size:11px}
+.plan-manager-row>div:last-child{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.danger-button{border:1px solid #e4b9b9;background:#fff5f5;color:#a33a3a;border-radius:9px;padding:8px 10px;font:inherit;cursor:pointer}
+@media(max-width:700px){
+ .overlay{padding:8px 8px max(20px,env(safe-area-inset-bottom))}
+ .modal{width:100%;max-height:calc(100dvh - 16px);padding:18px;border-radius:14px}
+ .section-actions{width:100%}.section-actions button{flex:1}
+ .plan-cards{grid-template-columns:1fr}
+ .plan-card{align-items:flex-start;flex-direction:column}
+ .plan-card-actions{width:100%;justify-content:stretch}
+ .plan-card-actions button{flex:1}
+ .plan-manager-row{align-items:flex-start;flex-direction:column}
+ .plan-manager-row>div:last-child{width:100%;justify-content:stretch}
+ .plan-manager-row>div:last-child button{flex:1}
+}
