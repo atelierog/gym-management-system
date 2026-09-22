@@ -35,7 +35,9 @@ create table if not exists public.membership_plans (
   id uuid primary key default gen_random_uuid(),
   gym_id uuid not null references public.gyms(id) on delete cascade,
   name text not null,
-  duration_months integer not null check (duration_months in (1,3,6,12)),
+  duration_months integer,
+  duration_value integer not null check (duration_value > 0 and duration_value <= 3650),
+  duration_unit text not null check (duration_unit in ('day','month')),
   price numeric(12,2) not null default 0,
   active boolean not null default true
 );
