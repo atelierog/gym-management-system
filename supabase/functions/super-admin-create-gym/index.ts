@@ -20,7 +20,7 @@ Deno.serve(async (req)=>{
   const name=String(body.name||"").trim(),ownerName=String(body.owner_name||"").trim(),requestedLogin=String(body.login_id||"").trim(),password=String(body.password||"");
   if(!name||!ownerName||password.length<8) return Response.json({error:"Gym name, owner name and an 8+ character password are required"},{status:400,headers:CORS});
   const base=(requestedLogin||name).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";
-  let loginId=requestedLogin.toUpperCase().replace(/\\s+/g,"").replace(/[^A-Z0-9_-]/g,"");
+  let loginId=requestedLogin.toUpperCase().replace(/\s+/g,"").replace(/[^A-Z0-9_-]/g,"");
   if(!loginId) { for(let i=1;i<=999;i++){ const candidate=base+String(i).padStart(2,"0"); const {data:used}=await admin.from("profiles").select("id").eq("login_id",candidate).limit(1); if(!used?.length){loginId=candidate;break;} } }
   if(!loginId) return Response.json({error:"Could not generate a unique GymOS login ID."},{status:409,headers:CORS});
   const {data:existing}=await admin.from("profiles").select("id").eq("login_id",loginId).limit(1);
