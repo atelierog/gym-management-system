@@ -38,3 +38,6 @@ Production frontend:
 
 ## Foundation
 The production architecture is documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Security-sensitive operations are server-authoritative, and membership/payment workflows use database transactions.
+
+
+See ARCHITECTURE.md for the final V1 product boundary, role model, security model, transaction boundaries, and deployment architecture.
