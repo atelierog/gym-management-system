@@ -13,7 +13,8 @@ create table if not exists public.gyms (
   allowed_radius_m integer not null default 100,
   created_at timestamptz not null default now(),
   auto_checkout_enabled boolean not null default true,
-  auto_checkout_minutes integer not null default 180
+  auto_checkout_minutes integer not null default 180,
+  timezone text not null default 'Asia/Kolkata'
 );
 
 create table if not exists public.profiles (
@@ -39,7 +40,8 @@ create table if not exists public.membership_plans (
   duration_value integer not null check (duration_value > 0 and duration_value <= 3650),
   duration_unit text not null check (duration_unit in ('day','month')),
   price numeric(12,2) not null default 0,
-  active boolean not null default true
+  active boolean not null default true,
+  unique(gym_id,duration_unit,duration_value)
 );
 
 create table if not exists public.memberships (
@@ -52,6 +54,10 @@ create table if not exists public.memberships (
   amount numeric(12,2) not null default 0,
   status text not null default 'active',
   created_at timestamptz not null default now(),
+  payment_status text not null default 'paid' check (payment_status in ('paid','pending','partial')),
+  amount_paid numeric(12,2) not null default 0,
+  amount_due numeric(12,2) not null default 0,
+  due_date date,
   check (expiry_date >= start_date)
 );
 
@@ -119,3 +125,6 @@ alter table public.audit_logs enable row level security;
 -- prototype tenant_* policies from earlier versions of this file.
 
 create unique index if not exists membership_plans_gym_duration_uidx on public.membership_plans(gym_id,duration_months);
+
+
+-- Production permissions, functions, RLS and platform administration are maintained by versioned migrations.
