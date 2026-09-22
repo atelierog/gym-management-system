@@ -103,3 +103,9 @@
  .platform-panel .tr{min-width:680px}
 }
 .notice-error{background:#fff1f2;color:#9f1239;border-color:#fecdd3}
+
+@media(max-width:650px){
+ .platform-sidebar .sidebar-bottom{display:block;margin:0 0 0 auto}
+ .platform-sidebar .logout{display:block;width:auto;margin:0;padding:9px 10px;border:1px solid #334155;border-radius:9px;background:#ffffff08;color:#cbd5e1;font-size:11px}
+ .platform-sidebar nav{margin-left:4px}
+}
