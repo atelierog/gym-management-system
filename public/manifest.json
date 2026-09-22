@@ -1,1 +1,17 @@
-{"name":"Gym Management System","short_name":"GymOS","start_url":"/","display":"standalone","background_color":"#111827","theme_color":"#111827","description":"Complete gym management system"}
+{
+  "name": "Gym Management System",
+  "short_name": "GymOS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "description": "Complete gym management system",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
