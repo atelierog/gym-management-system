@@ -124,7 +124,5 @@ alter table public.audit_logs enable row level security;
 -- in supabase/migrations/20260922_platform_super_admin.sql. Do not recreate old
 -- prototype tenant_* policies from earlier versions of this file.
 
-create unique index if not exists membership_plans_gym_duration_uidx on public.membership_plans(gym_id,duration_months);
-
-
--- Production permissions, functions, RLS and platform administration are maintained by versioned migrations.
+-- Duration uniqueness is enforced by the table constraint above.
+-- Production permissions, functions, RLS, triggers and platform administration are maintained by versioned migrations.
