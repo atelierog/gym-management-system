@@ -24,6 +24,7 @@ create table if not exists public.profiles (
   role text not null check (role in ('admin','trainer','member')),
   status text not null default 'active',
   phone text,
+  email text,
   password_change_required boolean not null default false,
   password_reset_at timestamptz,
   created_at timestamptz not null default now(),
@@ -114,3 +115,5 @@ alter table public.audit_logs enable row level security;
 -- in the hardening migration above. The platform super-admin layer is maintained
 -- in supabase/migrations/20260922_platform_super_admin.sql. Do not recreate old
 -- prototype tenant_* policies from earlier versions of this file.
+
+create unique index if not exists membership_plans_gym_duration_uidx on public.membership_plans(gym_id,duration_months);
