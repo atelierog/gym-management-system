@@ -189,3 +189,34 @@ Every release must pass:
 - password lifecycle test
 
 A green JavaScript build alone is not a release approval.
+
+## 9. Product benchmark and scope guardrail
+
+Comparable products such as Gymdesk, Glofox and GymMaster combine memberships, attendance, billing, member records and reporting, and their dashboards emphasize the same operational questions: who is active, who attended, what was collected, and what is overdue. GymOS therefore focuses on those same core jobs without importing their larger class-booking, POS, CRM, marketing, access-control and automation surfaces.
+
+V1 product navigation is intentionally limited to:
+- Dashboard
+- Members
+- Trainers
+- Memberships
+- Dues / Payments
+- Attendance
+- Reports
+- Settings
+
+Member and trainer portals remain intentionally small: Home, Attendance, Membership, Payments and password control.
+
+Future features must pass a simple test before entering V1: does this replace a real paper/spreadsheet/front-desk task for a small gym? If not, it stays out.
+
+## 10. Foundation hardening
+
+The database is authoritative for tenant membership and payment arithmetic, attendance GPS/radius verification, role and tenant immutability for tenant-admin edits, Super Admin authorization, password lifecycle, and transaction boundaries for membership/payment creation.
+
+`20260922_foundation_hardening_v2.sql` restores only the authenticated EXECUTE privileges needed by the already-authorized Super Admin RPCs; it does not make those RPCs public or remove their internal authorization checks.
+
+A release is not considered production-ready from a frontend build alone. The minimum smoke matrix is:
+1. Super Admin login, gym creation, gym detail save, owner reset/force-change.
+2. Gym Admin login, member/trainer creation, account activation, membership creation/renewal, payment/dues collection.
+3. Trainer login, GPS check-in/out, attendance history; no financial access.
+4. Member login, active-membership check-in/out, membership/payment/attendance visibility.
+5. Direct database/API attempts to cross gyms, change roles, fake GPS attendance, or create impossible payment states.
