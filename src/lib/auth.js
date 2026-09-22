@@ -8,7 +8,6 @@ export async function signIn(loginId,password){
  const email=raw.includes("@")?raw:raw+"@gymos.local";
  const {data,error}=await supabase.auth.signInWithPassword({email,password});
  if(error)throw error;
- if(email===SUPER_ADMIN_EMAIL) await supabase.rpc("bootstrap_platform_admin");
  const {data:platform}=await supabase.from("platform_admins").select("status").eq("id",data.user.id).maybeSingle();
  if(platform?.status==="active") return data;
  const {data:profile,error:pe}=await supabase.from("profiles").select("status").eq("id",data.user.id).single();
@@ -27,12 +26,6 @@ export async function currentProfile(){
  const {data,error}=await supabase.from("profiles").select("*").eq("id",user.id).single();
  if(error)throw error;
  if(data.status!=="active"){await supabase.auth.signOut();return null;}
- return data;
-}
-export async function bootstrapSuperAdmin(){
- if(!supabase) throw new Error("Supabase is not configured.");
- const {data,error}=await supabase.rpc("bootstrap_platform_admin");
- if(error) throw error;
  return data;
 }
 export { SUPER_ADMIN_EMAIL };
