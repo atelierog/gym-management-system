@@ -13,15 +13,15 @@ Multi-tenant gym management SaaS — V1.
 - Secure manual checkout
 - Configurable automatic checkout
 - Sunday gym closure
-- Membership plans: 1, 3, 6 and 12 months
+- Flexible membership plans by days or months, with one duration/price definition per gym
 - Membership start/expiry/renewal tracking
 - Expiry counts and in-app expiry reminders
-- Fees and payment records
+- Fees, dues, partial payments and payment records
 - Printable receipts with membership plan and paid status
 - Dashboard with present/absent attendance counts
 - Daily/weekly/monthly-style reports and CSV export
 - Admin audit log
-- PWA-ready responsive frontend
+- Responsive mobile-first PWA shell with role-specific portals
 
 ## Architecture
 React/Vite + Supabase/PostgreSQL + Cloudflare Workers/Pages.
@@ -34,3 +34,7 @@ The current model is documented in `supabase/schema.sql`. Production hardening c
 ## Deployment
 Production frontend:
 `https://gym-management-system.atelierog-co.workers.dev/`
+
+
+## Foundation
+The production architecture is documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Security-sensitive operations are server-authoritative, and membership/payment workflows use database transactions.
