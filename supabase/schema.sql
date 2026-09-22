@@ -24,6 +24,8 @@ create table if not exists public.profiles (
   role text not null check (role in ('admin','trainer','member')),
   status text not null default 'active',
   phone text,
+  password_change_required boolean not null default false,
+  password_reset_at timestamptz,
   created_at timestamptz not null default now(),
   unique(gym_id,login_id)
 );
