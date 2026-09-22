@@ -39,7 +39,7 @@ create index if not exists audit_logs_gym_actor_idx on public.audit_logs(gym_id,
 
 drop policy if exists profiles_update_admin on public.profiles;
 create policy profiles_update_admin on public.profiles for update to authenticated
-using (gym_id=(select private.current_gym_id()) and (select private.current_role())='admin' and id <> (select auth.uid()))
+using (memberships.payments.gym_id=(select private.current_gym_id()) and (select private.current_role())='admin' and id <> (select auth.uid()))
 with check (gym_id=(select private.current_gym_id()));
 
 drop policy if exists attendance_update_self on public.attendance;
@@ -98,8 +98,8 @@ drop policy if exists memberships_admin_insert on public.memberships;
 create policy memberships_admin_insert on public.memberships for insert to authenticated
 with check (
   gym_id=(select private.current_gym_id()) and (select private.current_role())='admin'
-  and exists(select 1 from public.profiles p where p.id=member_id and p.gym_id=gym_id and p.role='member')
-  and (plan_id is null or exists(select 1 from public.membership_plans mp where mp.id=plan_id and mp.gym_id=gym_id))
+  and exists(select 1 from public.profiles p where p.id=memberships.member_id and p.gym_id=memberships.gym_id and p.role='member')
+  and (plan_id is null or exists(select 1 from public.membership_plans mp where mp.id=memberships.plan_id and mp.gym_id=memberships.gym_id))
 );
 
 drop policy if exists memberships_admin_update on public.memberships;
@@ -107,7 +107,7 @@ create policy memberships_admin_update on public.memberships for update to authe
 using(gym_id=(select private.current_gym_id()) and (select private.current_role())='admin')
 with check (
   gym_id=(select private.current_gym_id()) and (select private.current_role())='admin'
-  and exists(select 1 from public.profiles p where p.id=member_id and p.gym_id=gym_id and p.role='member')
+  and exists(select 1 from public.profiles p where p.id=payments.member_id and p.gym_id=payments.gym_id and p.role='member')
   and (plan_id is null or exists(select 1 from public.membership_plans mp where mp.id=plan_id and mp.gym_id=gym_id))
 );
 
@@ -116,7 +116,7 @@ create policy payments_admin_insert on public.payments for insert to authenticat
 with check (
   gym_id=(select private.current_gym_id()) and (select private.current_role())='admin'
   and exists(select 1 from public.profiles p where p.id=member_id and p.gym_id=gym_id and p.role='member')
-  and (membership_id is null or exists(select 1 from public.memberships m where m.id=membership_id and m.gym_id=gym_id and m.member_id=member_id))
+  and (membership_id is null or exists(select 1 from public.memberships m where m.id=payments.membership_id and m.gym_id=payments.gym_id and m.member_id=payments.member_id))
 );
 
 drop policy if exists payments_admin_update on public.payments;
