@@ -1,6 +1,6 @@
 import React,{useState} from "react";
 import { supabase, setRememberMe } from "./lib/supabase";
-import { bootstrapSuperAdmin, SUPER_ADMIN_EMAIL } from "./lib/auth";
+
 
 export default function Login({onLogin}){
  const [id,setId]=useState(""),[password,setPassword]=useState(""),[showPassword,setShowPassword]=useState(false),[remember,setRemember]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState("");
