@@ -975,3 +975,46 @@ img,svg{max-width:100%}
     z-index:100!important;
   }
 }
+
+
+/* On mobile, modal screens own the viewport. Hide the global app bar
+   while any admin popup is open; the popup has its own title + close control. */
+@media(max-width:700px){
+  .admin-main:has(.overlay)>.mobile-topbar{
+    display:none!important;
+  }
+
+  .admin-main:has(.overlay){
+    padding-top:0!important;
+  }
+
+  .admin-main .overlay{
+    inset:0!important;
+    padding:10px!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+    z-index:200!important;
+  }
+
+  .admin-main .overlay .modal{
+    width:100%!important;
+    max-width:520px!important;
+    max-height:calc(100dvh - 20px)!important;
+    border-radius:18px 18px 0 0!important;
+  }
+
+  .admin-main .overlay .modal-head{
+    flex:0 0 60px!important;
+    height:60px!important;
+    min-height:60px!important;
+    position:relative!important;
+    z-index:5!important;
+  }
+
+  .admin-main .overlay .modal-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+}
