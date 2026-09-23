@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: "Admin access required" }, { status: 403 });
 
   const body = await req.json();
-  const { login_id, full_name, role = "member", phone, email, password } = body;
+  const { login_id, full_name, role = "member", phone, email: customerEmail, password } = body;
 
   if (!login_id || !full_name || !password || !["member", "trainer"].includes(role))
     return Response.json(
@@ -36,10 +36,11 @@ Deno.serve(async (req) => {
     return Response.json({ error: "Password must be at least 8 characters" }, { status: 400 });
 
   const normalizedLogin = String(login_id).trim();
-  const email = normalizedLogin.toLowerCase() + "@gymos.local";
+  const authEmail = normalizedLogin.toLowerCase() + "@gymos.local";
+  const normalizedCustomerEmail = String(customerEmail || "").trim().toLowerCase() || null;
 
   const { data: newUser, error: ue } = await admin.auth.admin.createUser({
-    email,
+    email: authEmail,
     password,
     email_confirm: true
   });
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
     role,
     status: "active",
     phone: phone || null,
-    email: String(email || "").trim().toLowerCase() || null,
+    email: normalizedCustomerEmail,
     password_change_required: true,
     password_reset_at: new Date().toISOString()
   }).select().single();
