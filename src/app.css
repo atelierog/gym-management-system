@@ -408,3 +408,38 @@ img,svg{max-width:100%}
  .overlay{padding:12px;align-items:center;justify-content:center;overflow-y:auto}
  .modal{width:100%;height:auto;max-height:calc(100dvh - 24px);border-radius:16px}
 }
+
+
+/* Final device audit: member/trainer portal + admin drawer cleanup */
+@media(max-width:650px){
+  /* Member/trainer portal: keep the navigation compact and prevent the sign-out controls from covering it. */
+  .app:not(.admin-app){display:block;min-height:100dvh}
+  .app:not(.admin-app)>aside{position:relative;width:100%;padding:13px 14px 10px;min-height:0;display:block}
+  .app:not(.admin-app)>aside h1{font-size:21px;margin:0}
+  .app:not(.admin-app)>aside p{margin:3px 0 8px;font-size:10px;line-height:1.35;padding-right:90px}
+  .app:not(.admin-app)>aside nav{display:flex;gap:5px;overflow-x:auto;margin:8px 0 9px;padding-bottom:2px;scrollbar-width:none}
+  .app:not(.admin-app)>aside nav::-webkit-scrollbar{display:none}
+  .app:not(.admin-app)>aside nav button{flex:0 0 auto;padding:9px 11px;font-size:12px;white-space:nowrap}
+  .app:not(.admin-app) .portal-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;position:static;margin:0}
+  .app:not(.admin-app) .portal-actions .logout{position:static;width:100%;padding:9px 10px;border:1px solid #273449;border-radius:8px;background:#172235;color:#cbd5e1;font-size:11px;text-align:center}
+  .app:not(.admin-app)>main{padding:15px 12px 28px}
+  .app:not(.admin-app)>main header{margin-bottom:15px}
+  .app:not(.admin-app)>main header h2{font-size:23px}
+  .app:not(.admin-app) .check-panel{padding:16px}
+
+  /* Admin drawer footer was missing dedicated layout rules. */
+  .mobile-drawer .drawer-footer{margin-top:auto;padding-top:14px;border-top:1px solid #1d293b;display:grid;gap:3px}
+  .mobile-drawer .drawer-footer .sidebar-link{width:100%;text-align:left}
+  .mobile-drawer .admin-nav{min-height:0;overflow-y:auto;padding-right:2px}
+  .mobile-drawer .workspace-card{flex:0 0 auto}
+
+  /* Phone-safe header actions: stack rather than squeeze into the title row. */
+  .admin-page-header .page-action{white-space:normal;word-break:break-word}
+  .admin-main>.notice{margin-left:12px;margin-right:12px}
+}
+
+@media(min-width:651px){
+  /* Keep the desktop content inside the actual viewport at common laptop widths. */
+  .admin-main{min-width:0;overflow-x:hidden}
+  .admin-main>.panel,.admin-main>.cards,.admin-main>.columns,.admin-main>.notice{min-width:0}
+}
