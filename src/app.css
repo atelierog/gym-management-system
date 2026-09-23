@@ -1187,3 +1187,12 @@ img,svg{max-width:100%}
     font-size:19px!important;
   }
 }
+
+/* Modal state must always hide the floating mobile navigation. */
+@media(max-width:700px){
+  html.gymos-modal-open .mobile-menu-floating,
+  .admin-app:has(.overlay) .mobile-menu-floating{
+    display:none!important;
+    pointer-events:none!important;
+  }
+}
