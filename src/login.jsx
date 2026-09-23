@@ -1,5 +1,6 @@
 import React,{useEffect,useState} from "react";
 import { supabase } from "./lib/supabase";
+import { signIn } from "./lib/auth";
 
 const REMEMBER_KEY="gymos_remembered_login_v1";
 
@@ -13,8 +14,8 @@ export default function Login({onLogin}){
   setBusy(true);
   const cleanId=id.trim();
   const email=cleanId.toLowerCase().includes("@")?cleanId.toLowerCase():cleanId.toLowerCase()+"@gymos.local";
-  const {data,error}=await supabase.auth.signInWithPassword({email,password});
-  if(error){setBusy(false);setError("Invalid Login ID or password.");return}
+  let data;
+  try{data=await signIn(cleanId,password)}catch(error){setBusy(false);setError(error?.message==="This account is inactive. Contact your Gym Admin."?error.message:"Invalid Login ID or password.");return}
   if(remember){try{localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:cleanId}))}catch{}}else{try{localStorage.removeItem(REMEMBER_KEY)}catch{}}
   setBusy(false);onLogin(data.user);
  }
