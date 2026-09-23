@@ -1167,3 +1167,8 @@ img,svg{max-width:100%}
     display:none!important;
   }
 }
+
+/* Keep the standalone mobile menu clear of the page heading. */
+@media(max-width:700px){
+  .admin-page-header{padding-right:68px!important}
+}
