@@ -402,3 +402,9 @@ img,svg{max-width:100%}
  .portal-actions{grid-template-columns:1fr}
  .login-card{padding-left:18px;padding-right:18px}
 }
+
+/* Consistent compact dialogs on all phone widths */
+@media(max-width:700px){
+ .overlay{padding:12px;align-items:center;justify-content:center;overflow-y:auto}
+ .modal{width:100%;height:auto;max-height:calc(100dvh - 24px);border-radius:16px}
+}
