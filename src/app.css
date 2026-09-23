@@ -899,3 +899,79 @@ img,svg{max-width:100%}
     overscroll-behavior:contain!important;
   }
 }
+
+
+/* Mobile modal geometry: reserve the fixed GYMOS app bar explicitly.
+   The overlay covers the viewport, but starts its dialog below the app bar.
+   This prevents the modal header/close button from ever being clipped. */
+@media(max-width:700px){
+  .admin-main .overlay{
+    position:fixed!important;
+    inset:0!important;
+    z-index:90!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+    padding:calc(64px + env(safe-area-inset-top) + 10px) 10px 10px!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  .admin-main .overlay .modal{
+    position:relative!important;
+    z-index:91!important;
+    width:100%!important;
+    max-width:520px!important;
+    height:auto!important;
+    max-height:calc(100dvh - 84px - env(safe-area-inset-top))!important;
+    min-height:0!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    border-radius:18px 18px 0 0!important;
+  }
+
+  .admin-main .overlay .modal-head{
+    flex:0 0 60px!important;
+    height:60px!important;
+    min-height:60px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    position:relative!important;
+    z-index:5!important;
+    padding:10px 15px!important;
+    background:#fff!important;
+    border-bottom:1px solid #e7ebf0!important;
+    box-sizing:border-box!important;
+  }
+
+  .admin-main .overlay .modal-head button{
+    flex:0 0 38px!important;
+    width:38px!important;
+    height:38px!important;
+    min-width:38px!important;
+    min-height:38px!important;
+    display:grid!important;
+    place-items:center!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:6!important;
+  }
+
+  .admin-main .overlay .modal-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+  }
+
+  /* Keep the real app bar above every popup. */
+  .admin-main>.mobile-topbar{
+    z-index:100!important;
+  }
+}
