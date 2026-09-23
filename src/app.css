@@ -375,3 +375,30 @@
 
 .people-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.danger-button{border:0;background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}.people-table{overflow-x:hidden}
 @media(max-width:700px){.people-table .tr{display:grid;grid-template-columns:1fr;min-width:0;gap:9px;padding:15px 8px}.people-table .tr.th{display:none}.people-table .tr>span{display:block}.people-table .tr>span:nth-child(1)::before{content:"NAME";display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px}.people-table .tr>span:nth-child(2)::before{content:"ID";display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px}.people-table .tr>span:nth-child(3)::before{content:"PHONE";display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px}.people-table .tr>span:nth-child(4)::before{content:"STATUS";display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px}.people-table .tr>span:nth-child(5)::before{content:"ACTION";display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#9ca3af;margin-bottom:6px}.people-actions{width:100%;gap:8px}.people-actions button{margin:0}.people-table{overflow-x:visible}}
+
+/* Final responsive hardening */
+html,body,#root{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+button,input,select,textarea{max-width:100%}
+img,svg{max-width:100%}
+@media(max-width:700px){
+ .app,main,.admin-main,.platform-main,.platform-content,.panel,.stat,.columns,.cards{min-width:0}
+ .admin-main>.panel,.admin-main>.cards,.admin-main>.columns,.admin-main>.notice{width:auto;max-width:none}
+ .admin-page-header{min-width:0}
+ .admin-page-header .page-heading{overflow-wrap:anywhere}
+ .admin-page-header .page-action{flex-shrink:0}
+ .admin-main .table{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .admin-main .tr{max-width:none}
+ .section-top h3,.section-top p,.panel-subtitle{overflow-wrap:anywhere}
+ .stat strong,.stat span,.stat small{overflow-wrap:anywhere}
+ .membership-box{max-width:100%;overflow-wrap:anywhere}
+ .detail-grid,.profile-grid,.mini-stats,.report-metrics{min-width:0}
+ .form input,.form select,.form textarea{min-width:0}
+}
+@media(max-width:420px){
+ .admin-summary-cards,.platform-cards{grid-template-columns:1fr}
+ .cards{grid-template-columns:1fr}
+ .admin-page-header{display:block}
+ .admin-page-header .page-action{margin-top:12px;width:100%;max-width:none}
+ .portal-actions{grid-template-columns:1fr}
+ .login-card{padding-left:18px;padding-right:18px}
+}
