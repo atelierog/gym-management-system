@@ -1172,3 +1172,18 @@ img,svg{max-width:100%}
 @media(max-width:700px){
   .admin-page-header{padding-right:68px!important}
 }
+
+/* Final mobile navigation cleanup. */
+@media(max-width:700px){
+  .admin-app:has(.overlay)>.mobile-menu-floating{display:none!important}
+  .back-button{
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    flex:0 0 48px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    font-size:19px!important;
+  }
+}
