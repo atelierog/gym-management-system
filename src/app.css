@@ -840,3 +840,62 @@ img,svg{max-width:100%}
   .mobile-scrim{z-index:150!important}
   .mobile-drawer{z-index:151!important}
 }
+
+
+/* Final modal fix: keep the modal title + close button permanently visible. */
+@media(max-width:700px){
+  .admin-main .overlay{
+    inset:calc(64px + env(safe-area-inset-top)) 0 0 0!important;
+    padding:10px!important;
+    align-items:flex-end!important;
+    overflow:hidden!important;
+  }
+  .admin-main .overlay .modal{
+    width:100%!important;
+    height:auto!important;
+    max-height:calc(100% - 10px)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    border-radius:18px 18px 0 0!important;
+  }
+  .admin-main .overlay .modal-head{
+    position:sticky!important;
+    top:0!important;
+    flex:0 0 auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    min-height:60px!important;
+    padding:12px 15px!important;
+    background:#fff!important;
+    z-index:10!important;
+    border-bottom:1px solid #e7ebf0!important;
+  }
+  .admin-main .overlay .modal-head h3{
+    margin:0!important;
+    padding:0 10px 0 0!important;
+    font-size:17px!important;
+    line-height:1.25!important;
+  }
+  .admin-main .overlay .modal-head button{
+    flex:0 0 38px!important;
+    width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    display:grid!important;
+    place-items:center!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:11!important;
+  }
+  .admin-main .overlay .modal-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+  }
+}
