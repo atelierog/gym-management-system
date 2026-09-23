@@ -1116,3 +1116,18 @@ img,svg{max-width:100%}
     padding-bottom:calc(16px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* Mobile header removed: content starts at the top of the phone. */
+@media(max-width:700px){
+  .admin-main{
+    padding-top:0!important;
+  }
+  .admin-main>.mobile-topbar{
+    display:none!important;
+  }
+  .admin-main .overlay{
+    inset:0!important;
+    padding:0!important;
+  }
+}
