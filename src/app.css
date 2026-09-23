@@ -513,3 +513,278 @@ img,svg{max-width:100%}
     border-color:#fecdd3!important;
   }
 }
+
+/* =========================================================
+   GYMOS MOBILE-FIRST PASS
+   Phones are the primary product surface. No desktop layout
+   should leak into the phone experience.
+   ========================================================= */
+@media(max-width:700px){
+  :root{color-scheme:light}
+  html,body,#root{width:100%;min-width:0;overflow-x:hidden}
+  body{background:#f6f7f9;-webkit-tap-highlight-color:transparent}
+  .admin-app{display:block!important;min-height:100dvh;background:#f6f7f9}
+  .admin-sidebar{display:none!important}
+  .admin-main{
+    width:100%!important;
+    min-height:100dvh;
+    margin:0!important;
+    padding:0 0 calc(28px + env(safe-area-inset-bottom))!important;
+    overflow-x:hidden!important;
+  }
+
+  /* App bar */
+  .admin-main>.mobile-topbar{
+    position:sticky;
+    top:0;
+    z-index:25;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    min-height:64px;
+    padding:10px 14px;
+    padding-top:calc(10px + env(safe-area-inset-top));
+    background:#0b1220;
+    border-bottom:1px solid #1d293b;
+    box-shadow:0 4px 18px #0b12201f;
+  }
+  .mobile-brand{min-width:0}
+  .mobile-brand .brand-mark{width:34px;height:34px;border-radius:9px}
+  .mobile-brand b{font-size:13px}
+  .mobile-brand small{font-size:8px}
+  .menu-trigger{
+    width:42px;height:42px;display:grid;place-content:center;gap:4px;
+    border:1px solid #29374b;border-radius:11px;background:#121d2d;color:#fff;
+    cursor:pointer;padding:0;
+  }
+  .menu-trigger span{display:block;width:19px;height:2px;border-radius:2px;background:#d9e1ec}
+
+  /* Mobile drawer */
+  .mobile-scrim{position:fixed;inset:0;z-index:50;background:#07101ecc;display:block}
+  .mobile-drawer{
+    position:fixed!important;z-index:51;inset:0 auto 0 0;
+    width:min(88vw,340px)!important;height:100dvh;
+    padding:14px!important;
+    background:#0b1220!important;
+    border-right:1px solid #263247;
+    box-shadow:16px 0 40px #0005;
+    display:flex!important;flex-direction:column!important;
+    overflow:hidden;
+  }
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .drawer-close{
+    width:40px;height:40px;border:1px solid #2c394c;border-radius:10px;
+    background:#121d2d;color:#fff;font-size:25px;line-height:1;cursor:pointer;
+  }
+  .mobile-drawer .workspace-card{margin:14px 0;padding:12px}
+  .mobile-drawer .admin-nav{flex:1;min-height:0;overflow-y:auto;gap:16px}
+  .mobile-drawer .nav-item{min-height:46px;padding:11px 12px;font-size:14px}
+  .mobile-drawer .nav-group-label{font-size:9px;padding-bottom:5px}
+  .mobile-drawer .drawer-footer{padding-top:12px}
+  .mobile-drawer .drawer-footer .sidebar-link{min-height:44px;font-size:13px}
+
+  /* Page header */
+  .admin-page-header{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:18px 15px 14px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:0!important;
+    background:#f6f7f9;
+  }
+  .page-heading{min-width:0}
+  .page-heading .eyebrow{font-size:8px;letter-spacing:1.5px}
+  .page-title-row{display:flex;align-items:center;gap:9px;margin-top:3px}
+  .page-title-row h2{font-size:29px!important;line-height:1.1;letter-spacing:-1px;margin:0!important}
+  .back-button{
+    width:auto!important;min-width:72px;height:38px;
+    padding:0 11px!important;
+    display:inline-flex!important;align-items:center;justify-content:center;gap:5px;
+    border:1px solid #d9e0e8!important;border-radius:10px!important;
+    background:#fff!important;color:#172033!important;
+    box-shadow:0 2px 7px #1720330d!important;
+    font-size:13px!important;font-weight:700!important;
+  }
+  .back-button span{font-size:12px}
+  .page-heading p{font-size:12px!important;line-height:1.4;margin-top:7px!important}
+  .page-action{
+    width:100%!important;
+    min-height:48px!important;
+    margin-top:14px!important;
+    border-radius:12px!important;
+    font-size:14px!important;
+  }
+
+  /* Notices */
+  .admin-main>.notice{
+    width:auto!important;
+    max-width:none!important;
+    margin:0 15px 14px!important;
+    padding:13px 14px!important;
+    border-radius:12px!important;
+    font-size:13px;
+    line-height:1.4;
+    box-shadow:0 3px 12px #17203308;
+  }
+  .notice-error{background:#fff1f2!important;color:#9f1239!important;border-color:#fecdd3!important}
+  .notice button{min-width:32px;min-height:32px}
+
+  /* Content cards */
+  .admin-main>.panel,
+  .admin-main>.cards,
+  .admin-main>.columns{
+    width:auto!important;
+    max-width:none!important;
+    margin-left:15px!important;
+    margin-right:15px!important;
+  }
+  .panel{
+    padding:16px!important;
+    border-radius:16px!important;
+    margin-bottom:12px!important;
+    box-shadow:0 4px 16px #1720330a!important;
+  }
+  .panel h3{font-size:16px}
+  .panel small{font-size:11px;line-height:1.45}
+  .section-top{gap:10px;align-items:flex-start}
+  .section-top>div{min-width:0}
+  .section-top>b{font-size:14px;white-space:nowrap}
+  .cards{gap:9px!important}
+  .stat{padding:14px!important;border-radius:14px!important}
+  .stat strong{font-size:24px!important;margin:8px 0 4px!important}
+  .stat span,.stat small{font-size:10px}
+  .columns{gap:12px!important}
+
+  /* Dashboard / shortcut cards */
+  .renewal-shortcuts{grid-template-columns:1fr 1fr!important;gap:9px!important}
+  .renewal-card{min-height:104px!important;padding:13px!important;border-radius:13px!important}
+  .renewal-card b{font-size:22px}
+  .renewal-row{grid-template-columns:38px minmax(0,1fr) auto!important;padding:12px 8px!important}
+
+  /* All data tables become vertical phone cards */
+  .admin-main .table{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  .admin-main .table .tr.th{display:none!important}
+  .admin-main .table .tr:not(.th){
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    min-width:0!important;
+    width:100%!important;
+    gap:7px!important;
+    padding:14px 4px!important;
+    border-bottom:1px solid #edf0f4;
+    font-size:13px;
+  }
+  .admin-main .table .tr:not(.th)>span{
+    min-width:0!important;
+    overflow-wrap:anywhere;
+  }
+  .admin-main .table .tr:not(.th)>span:last-child{
+    margin-top:3px;
+  }
+
+  /* Members / people */
+  .people-table{padding:2px 0 0!important}
+  .people-table .tr:not(.th){
+    grid-template-columns:1fr 1fr!important;
+    gap:13px 16px!important;
+    padding:18px 4px!important;
+  }
+  .people-table .tr:not(.th)>span:nth-child(5){grid-column:1/-1}
+  .people-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+  .people-actions button{min-height:45px!important;border-radius:10px!important;font-size:12px!important}
+  .people-actions button:nth-child(3){grid-column:1/-1}
+  .people-actions button:nth-child(4){grid-column:1/-1}
+  .people-actions .secondary{background:#f2f4f7!important;border:1px solid #e2e7ed!important}
+  .people-actions .danger-button{background:#fff0f1!important;border:1px solid #f4c8cc!important;color:#a33a3a!important}
+
+  /* Forms and dialogs */
+  .form{gap:13px!important}
+  .form label{font-size:12px!important}
+  .form input,.form select,.form textarea{
+    min-height:46px!important;
+    margin-top:6px!important;
+    padding:12px!important;
+    border-radius:10px!important;
+    font-size:15px!important;
+  }
+  .form button{min-height:48px!important;border-radius:11px!important}
+  .overlay{padding:10px!important;align-items:flex-end!important}
+  .modal{
+    width:100%!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 10px)!important;
+    height:auto!important;
+    border-radius:18px 18px 0 0!important;
+  }
+  .modal-head{
+    min-height:60px!important;
+    padding:13px 15px!important;
+  }
+  .modal-head h3{font-size:17px!important}
+  .modal-body{padding:15px!important}
+  .modal-head button{width:38px!important;height:38px!important}
+  .profile-back{
+    display:inline-flex!important;
+    width:max-content;
+    min-height:40px;
+    padding:0 13px!important;
+    border:1px solid #dfe5ec!important;
+    background:#f5f7fa!important;
+    border-radius:10px!important;
+    color:#172033!important;
+    font-size:12px!important;
+    font-weight:800!important;
+    align-items:center;
+  }
+  .profile-hero{padding:14px!important;border-radius:14px!important}
+  .profile-grid{grid-template-columns:1fr!important}
+  .profile-actions{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .profile-actions>*{width:100%;min-height:44px!important;text-align:center}
+  .profile-actions>*:last-child{grid-column:1/-1}
+  .profile-history{grid-template-columns:1fr!important}
+
+  /* Prevent tiny desktop controls */
+  .section-actions{display:grid!important;grid-template-columns:1fr!important}
+  .section-actions>*{width:100%!important;min-height:44px}
+  .report-toolbar{padding:15px!important;border-radius:14px!important}
+  .report-filters{grid-template-columns:1fr!important}
+  .report-filters>*{width:100%!important}
+  .report-filters .secondary{grid-column:auto!important}
+  .report-hero,.report-grid{grid-template-columns:1fr!important}
+  .report-card{padding:15px!important}
+  .report-metrics{grid-template-columns:1fr 1fr!important}
+
+  /* Touch / accessibility */
+  button,a,input,select{touch-action:manipulation}
+  button,a{min-height:42px}
+  a.secondary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+  .primary,.secondary{font-size:13px}
+}
+
+@media(max-width:420px){
+  .admin-page-header{padding-left:13px!important;padding-right:13px!important}
+  .admin-main>.panel,.admin-main>.cards,.admin-main>.columns{margin-left:13px!important;margin-right:13px!important}
+  .admin-main>.notice{margin-left:13px!important;margin-right:13px!important}
+  .page-title-row h2{font-size:27px!important}
+  .people-table .tr:not(.th){grid-template-columns:1fr!important}
+  .people-table .tr:not(.th)>span:nth-child(5){grid-column:auto}
+  .people-actions{grid-template-columns:1fr 1fr!important}
+  .people-actions button:nth-child(3),.people-actions button:nth-child(4){grid-column:auto}
+  .renewal-shortcuts{grid-template-columns:1fr!important}
+  .profile-actions{grid-template-columns:1fr!important}
+  .profile-actions>*:last-child{grid-column:auto}
+}
+
+/* On phone, hide hover-only effects and use clear pressed states. */
+@media(hover:none) and (pointer:coarse){
+  button:hover,.nav-item:hover,.sidebar-link:hover{background:inherit;transform:none}
+  button:active{transform:scale(.99)}
+}
