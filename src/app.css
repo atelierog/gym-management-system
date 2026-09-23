@@ -1131,3 +1131,39 @@ img,svg{max-width:100%}
     padding:0!important;
   }
 }
+
+
+/* Standalone mobile navigation trigger — no black app header. */
+.mobile-menu-floating{display:none}
+@media(max-width:700px){
+  .mobile-menu-floating{
+    display:flex!important;
+    position:fixed!important;
+    top:calc(12px + env(safe-area-inset-top))!important;
+    right:12px!important;
+    z-index:140!important;
+    width:44px!important;
+    height:44px!important;
+    padding:0!important;
+    margin:0!important;
+    border:1px solid #d9e0e8!important;
+    border-radius:12px!important;
+    background:#fff!important;
+    box-shadow:0 4px 16px #17203318!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex-direction:column!important;
+    gap:4px!important;
+  }
+  .mobile-menu-floating span{
+    display:block!important;
+    width:18px!important;
+    height:2px!important;
+    border-radius:2px!important;
+    background:#172033!important;
+  }
+  /* A popup owns the whole screen, so the menu trigger is not shown behind it. */
+  .admin-main:has(>.overlay)>.mobile-menu-floating{
+    display:none!important;
+  }
+}
