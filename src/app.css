@@ -172,7 +172,7 @@
 .sidebar-link:hover{background:#ffffff08;color:#fff}
 .sidebar-link.muted{color:#748297}
 .nav-icon-wrap{width:16px;text-align:center;color:#8290a4}
-.admin-main{margin-left:248px;min-height:100vh;background:#f6f7f9;padding:28px 34px 50px}
+.admin-main{margin-left:248px;min-height:100vh;background:#f6f7f9;padding:28px 34px 50px;max-width:none;width:auto;margin-right:0}
 .mobile-topbar,.mobile-drawer,.mobile-scrim{display:none}
 .admin-page-header{max-width:1180px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
 .page-heading .eyebrow{font-size:9px;letter-spacing:1.8px;color:#8a94a4;font-weight:700}
@@ -188,7 +188,7 @@
 .mini-stats b{display:block;font-size:20px}
 .mini-stats span{display:block;margin-top:3px;color:#7b8493;font-size:10px}
 .admin-main .panel{box-shadow:0 4px 18px #17203308;border-color:#e6e9ef}
-@media(max-width:1000px){.admin-sidebar{width:220px}.admin-main{margin-left:220px;padding:24px}.admin-summary-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1000px){.admin-sidebar{width:220px}.admin-main{margin-left:220px;padding:24px;max-width:none;width:auto;margin-right:0}.admin-summary-cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){
  .admin-sidebar{display:none}
  .admin-main{margin-left:0;padding:0 0 32px}
