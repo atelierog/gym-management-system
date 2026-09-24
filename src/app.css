@@ -1269,3 +1269,10 @@ img,svg{max-width:100%}
 .platform-filter-menu button:hover,.platform-filter-menu button.selected{background:#f3f6fa}
 .platform-filter-menu button span{color:#0f766e;font-weight:900}
 @media(max-width:700px){.platform-filter{flex:1}.platform-filter-menu{left:0;right:auto;width:100%;min-width:0}}
+
+/* Super Admin gym accounts: clean name-first navigation */
+.gym-name-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.gym-name-row{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border:1px solid #e2e7ee;border-radius:14px;background:#fff;color:#172033;text-align:left;font:inherit;font-weight:800;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+.gym-name-row:hover{background:#f8fafc;border-color:#cfd7e2;transform:translateY(-1px)}
+.gym-name-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-name-row b{font-size:25px;font-weight:500;color:#8a94a4;line-height:1}
