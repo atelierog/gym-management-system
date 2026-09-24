@@ -1246,3 +1246,9 @@ img,svg{max-width:100%}
   .platform-health-strip{align-items:flex-start;flex-wrap:wrap}.platform-health-strip>div:first-child{min-width:calc(100% - 10px)}.scan-time{width:100%}
   .health-summary{grid-template-columns:repeat(2,1fr)}.health-head{align-items:flex-start;flex-direction:column}.platform-floating-alert{right:14px;bottom:14px}
 }
+
+/* Super Admin overlays must always sit above notices, tables and page chrome */
+.platform-shell>.overlay{z-index:1000!important}
+.platform-notice{position:relative;z-index:100}
+.platform-floating-alert{z-index:900!important}
+.health-button.health-alert{border-color:#efb5b5;background:#fff5f5;color:#9b2525}
