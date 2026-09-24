@@ -40,12 +40,12 @@ Deno.serve(async req=>{
   if(owner.status!=="active") return Response.json({error:"The Gym Owner account is inactive."},{status:400,headers:CORS});
   if(!owner.email) return Response.json({error:"No owner email is saved for this gym."},{status:400,headers:CORS});
   const password=tempPassword();
-  const {error:ue}=await admin.auth.admin.updateUserById(owner.id,{password}); if(ue) return Response.json({error:"Could not generate new owner credentials."},{status:400,headers:CORS});
+  const email=await sendEmail({gymId,gymName:gym.name,ownerName:owner.full_name,ownerEmail:owner.email,ownerPhone:owner.phone||"",loginId:owner.login_id,password});
+  if(!email.sent) return Response.json({email_sent:false,error:"Welcome email could not be sent. The existing owner password was left unchanged. You can try Resend Welcome Email again.",email_status:email.reason},{status:502,headers:{...CORS,"Content-Type":"application/json"}});
+  const {error:ue}=await admin.auth.admin.updateUserById(owner.id,{password}); if(ue) return Response.json({error:"The email was sent, but the new owner password could not be activated. Please contact support."},{status:500,headers:CORS});
   const now=new Date().toISOString();
   const {error:pe}=await admin.from("profiles").update({password_change_required:true,password_reset_at:now}).eq("id",owner.id);
   if(pe) return Response.json({error:pe.message},{status:400,headers:CORS});
-  const email=await sendEmail({gymId,gymName:gym.name,ownerName:owner.full_name,ownerEmail:owner.email,ownerPhone:owner.phone||"",loginId:owner.login_id,password});
-  if(!email.sent) return Response.json({email_sent:false,error:"New owner credentials were generated, but the welcome email could not be sent. You can try Resend Welcome Email again.",email_status:email.reason},{status:502,headers:{...CORS,"Content-Type":"application/json"}});
   await admin.from("audit_logs").insert({gym_id:gymId,actor_id:null,action:"resend_owner_welcome_email",entity:"profile",entity_id:owner.id,details:{actor_type:"platform_super_admin",login_id:owner.login_id}});
   return Response.json({ok:true,email_sent:true,email_status:"Welcome email sent successfully.",temporary_password:password,login_id:owner.login_id},{headers:{...CORS,"Content-Type":"application/json"}});
 });
