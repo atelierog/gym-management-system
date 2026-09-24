@@ -6,7 +6,7 @@ const REMEMBER_KEY="gymos_remembered_login_v1";
 
 export default function Login({onLogin}){
  const [id,setId]=useState(""),[password,setPassword]=useState(""),[remember,setRemember]=useState(false),[showPassword,setShowPassword]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");if(saved?.id){setId(saved.id);setRemember(true)}}catch{}},[]);
+ useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");if(saved?.id){setId(saved.id);setRemember(true);if(saved.password){try{localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:saved.id}))}catch{}}}}catch{}},[]);
  async function submit(e){
   e.preventDefault();setError("");
   if(!supabase){setError("Supabase is not configured yet.");return}
