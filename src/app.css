@@ -1291,3 +1291,18 @@ img,svg{max-width:100%}
   .platform-filter{flex:0 0 108px}
   .platform-filter-trigger{padding:0 9px!important}
 }
+
+/* Super Admin filter: compact trigger with explicit default/active state */
+.platform-toolbar{align-items:flex-start!important}
+.platform-filter{flex:0 0 auto!important}
+.platform-filter-trigger{width:auto!important;min-width:118px!important;height:44px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;padding:0 13px!important}
+.platform-filter-trigger>span{flex:0 0 auto!important}
+.platform-filter-trigger .platform-filter-clear{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:20px;line-height:18px;font-weight:500;color:#7b8595;cursor:pointer}
+.platform-filter-trigger .platform-filter-clear:hover{background:#edf1f5;color:#172033}
+.platform-filter-menu{top:calc(100% + 12px)!important}
+.platform-filter-menu button{min-height:44px!important;padding:11px 12px!important}
+.platform-filter-menu button+button{margin-top:3px}
+@media(max-width:700px){
+ .platform-filter{flex:0 0 auto!important}
+ .platform-filter-trigger{min-width:112px!important}
+}
