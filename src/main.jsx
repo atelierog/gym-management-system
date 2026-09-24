@@ -150,21 +150,55 @@ function SuperAdminApp({profile}){
   const suspendedCount=gyms.filter(g=>(g.platform_status||"active")==="suspended").length;
   const greeting=(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening"})();
 
-  return <div className="platform-shell">
-    <header className="platform-topbar"><div className="platform-brand"><div className="platform-mark">AOG</div><div><b>ATELIER OG</b><small>GYMOS PLATFORM</small></div></div><button className="topbar-signout" onClick={signOut}>Sign out</button></header>
+  return <div className="platform-shell super-admin-platform">
+    <header className="platform-topbar">
+      <div className="platform-brand"><div className="platform-mark">AOG</div><div><b>ATELIER OG</b><small>GYMOS PLATFORM</small></div></div>
+      <button className="topbar-signout" onClick={signOut}>Sign out</button>
+    </header>
     <main className="platform-main platform-content">
       <div className="platform-notice"><Notice/></div>
-      <section className="platform-welcome"><p>{greeting}, {profile.full_name||"Super Admin"}</p><h2>Welcome to GymOS</h2><span>Manage your GymOS platform and Gym Owner access.</span></section>
-      <section className="platform-actions"><button className="primary" onClick={()=>setModal(true)}>+ Add Gym</button><button className="secondary" onClick={load} disabled={refreshing}>{refreshing?"Refreshing…":"↻ Refresh"}</button><button className={"health-button "+(healthScanFailed||healthSummary.critical+healthSummary.error?"health-alert":"")} onClick={()=>setHealthOpen(true)}>{healthScanFailed?"⚠ Scan failed":healthSummary.critical+healthSummary.error+healthSummary.warning>0?"⚠ "+(healthSummary.critical+healthSummary.error+healthSummary.warning)+" issues":"✓ Platform healthy"}</button></section>
-      <section className="cards platform-cards">
-        <Card t="Gyms" n={gyms.length} s="GymOS tenants"/>
-        <Card t="Active gyms" n={activeCount} s="Platform access active"/>
-        <Card t="Gym owners" n={owners.length} s="Owner accounts"/>
-        <Card t="Suspended gyms" n={suspendedCount} s="Platform access suspended"/>
+
+      <section className="super-admin-head">
+        <div>
+          <span className="super-admin-eyebrow">PLATFORM CONTROL</span>
+          <h2>GymOS Platform</h2>
+          <p>{greeting}, {profile.full_name||"Super Admin"} · Manage gyms and platform access.</p>
+        </div>
+        <div className="super-admin-head-actions">
+          <button className="primary" onClick={()=>setModal(true)}>+ Add Gym</button>
+          <button type="button" className={"health-status "+(healthScanFailed||healthSummary.critical+healthSummary.error?"is-alert":"")} onClick={()=>setHealthOpen(true)}>
+            <span className="health-dot"></span>
+            {healthScanFailed?"Health scan failed":healthSummary.critical+healthSummary.error+healthSummary.warning>0?(healthSummary.critical+healthSummary.error+healthSummary.warning)+" issues":"Healthy"}
+          </button>
+        </div>
       </section>
-      <section className="platform-health-strip"><div><span>PLATFORM HEALTH</span><b>{healthScanFailed?"Health scan failed":healthSummary.critical+healthSummary.error===0?"No critical errors detected":"Attention required"}</b><small>{healthSummary.critical} critical · {healthSummary.error} errors · {healthSummary.warning} warnings</small></div><button className="secondary" onClick={runHealthScan} disabled={healthBusy}>{healthBusy?"Scanning whole app…":"Run full scan"}</button>{lastScan&&<small className="scan-time">Last checked {new Date(lastScan).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</small>}</section><section className="panel platform-panel">
-        <div className="section-top"><div><h3>Gym Accounts</h3></div></div>
-        <div className="platform-toolbar"><div className="platform-search"><span aria-hidden="true">⌕</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search gyms"/></div><div className="platform-filter"><button type="button" className={"platform-filter-trigger "+(statusFilter!=="all"?"has-filter":"")} onClick={()=>setFilterOpen(v=>!v)} aria-expanded={filterOpen}>Filter <span>{statusFilter==="all"?"":statusFilter==="active"?"Active":"Suspended"}</span>{statusFilter!=="all"&&<b className="platform-filter-clear" aria-label="Clear filter" onClick={e=>{e.stopPropagation();setStatusFilter("all");setFilterOpen(false)}}>×</b>}</button>{filterOpen&&<div className="platform-filter-menu" role="menu"><button type="button" className={statusFilter==="all"?"selected":""} onClick={()=>{setStatusFilter("all");setFilterOpen(false)}}>All <span>{statusFilter==="all"?"✓":""}</span></button><button type="button" className={statusFilter==="active"?"selected":""} onClick={()=>{setStatusFilter("active");setFilterOpen(false)}}>Active <span>{statusFilter==="active"?"✓":""}</span></button><button type="button" className={statusFilter==="suspended"?"selected":""} onClick={()=>{setStatusFilter("suspended");setFilterOpen(false)}}>Suspended <span>{statusFilter==="suspended"?"✓":""}</span></button></div>}</div></div>
+
+      <section className="super-admin-summary">
+        <div><span>Gyms</span><b>{gyms.length}</b></div>
+        <div><span>Active</span><b>{activeCount}</b></div>
+        <div><span>Suspended</span><b>{suspendedCount}</b></div>
+        <button type="button" onClick={()=>setHealthOpen(true)}><span>Issues</span><b>{healthSummary.critical+healthSummary.error+healthSummary.warning}</b></button>
+      </section>
+
+      <section className="panel platform-panel super-admin-gym-panel">
+        <div className="section-top super-admin-section-top">
+          <div><h3>Gym Accounts</h3><small>{filteredGyms.length} of {gyms.length} gyms</small></div>
+          <button className="secondary compact-refresh" onClick={load} disabled={refreshing}>{refreshing?"Refreshing…":"↻ Refresh"}</button>
+        </div>
+        <div className="platform-toolbar super-admin-toolbar">
+          <div className="platform-search"><span aria-hidden="true">⌕</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search gyms"/></div>
+          <div className="platform-filter">
+            <button type="button" className={"platform-filter-trigger "+(statusFilter!=="all"?"has-filter":"")} onClick={()=>setFilterOpen(v=>!v)} aria-expanded={filterOpen}>
+              Filter {statusFilter!=="all"&&<span>{statusFilter==="active"?"Active":"Suspended"}</span>}
+              {statusFilter!=="all"&&<b className="platform-filter-clear" aria-label="Clear filter" onClick={e=>{e.stopPropagation();setStatusFilter("all");setFilterOpen(false)}}>×</b>}
+            </button>
+            {filterOpen&&<div className="platform-filter-menu" role="menu">
+              <button type="button" className={statusFilter==="all"?"selected":""} onClick={()=>{setStatusFilter("all");setFilterOpen(false)}}>All <span>{statusFilter==="all"?"✓":""}</span></button>
+              <button type="button" className={statusFilter==="active"?"selected":""} onClick={()=>{setStatusFilter("active");setFilterOpen(false)}}>Active <span>{statusFilter==="active"?"✓":""}</span></button>
+              <button type="button" className={statusFilter==="suspended"?"selected":""} onClick={()=>{setStatusFilter("suspended");setFilterOpen(false)}}>Suspended <span>{statusFilter==="suspended"?"✓":""}</span></button>
+            </div>}
+          </div>
+        </div>
         <div className="gym-name-list">
           {filteredGyms.map(g=><button type="button" className="gym-name-row" key={g.id} onClick={()=>openGym(g)}><span>{g.name}</span><b aria-hidden="true">›</b></button>)}
         </div>
