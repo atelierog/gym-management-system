@@ -1252,3 +1252,9 @@ img,svg{max-width:100%}
 .platform-notice{position:relative;z-index:100}
 .platform-floating-alert{z-index:900!important}
 .health-button.health-alert{border-color:#efb5b5;background:#fff5f5;color:#9b2525}
+
+/* Super Admin: every modal/confirmation must be above alerts and underlying dialogs */
+.overlay{z-index:2000!important}
+.platform-shell .overlay{z-index:2100!important}
+.platform-floating-alert{z-index:1900!important}
+.platform-notice{z-index:1800}
