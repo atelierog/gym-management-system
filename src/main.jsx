@@ -55,7 +55,8 @@ function SuperAdminApp({profile}){
     if(g.error||p.error){showError("Could not load Super Admin data",g.error?.message||p.error?.message||"The platform data could not be loaded.");return}
     setGyms(g.data||[]);setOwners(p.data||[]);
   }
-  async function runHealthScan(){setHealthBusy(true);const{data,error}=await supabase.functions.invoke("super-admin-health-scan",{body:{}});setHealthBusy(false);if(error||data?.error){showError("Health scan failed",await readError(error,data,"The full platform scan could not be completed."));return}setHealthIssues(data?.issues||[]);setHealthSummary(data?.summary||{critical:0,error:0,warning:0,info:0});setLastScan(data?.scanned_at||new Date().toISOString());}\n  useEffect(()=>{load();runHealthScan();const timer=setInterval(runHealthScan,60000);return()=>clearInterval(timer)},[]);
+  async function runHealthScan(){setHealthBusy(true);const{data,error}=await supabase.functions.invoke("super-admin-health-scan",{body:{}});setHealthBusy(false);if(error||data?.error){showError("Health scan failed",await readError(error,data,"The full platform scan could not be completed."));return}setHealthIssues(data?.issues||[]);setHealthSummary(data?.summary||{critical:0,error:0,warning:0,info:0});setLastScan(data?.scanned_at||new Date().toISOString());}
+  useEffect(()=>{load();runHealthScan();const timer=setInterval(runHealthScan,60000);return()=>clearInterval(timer)},[]);
   function suggestId(name){const base=String(name||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";return base+"01"}
   function passwordError(p){
     const missing=[];
