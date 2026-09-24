@@ -30,7 +30,7 @@ Deno.serve(async (req)=>{
     return Response.json({ok:true,password_change_required:true},{headers:{...CORS,"Content-Type":"application/json"}});
   }
   const password=String(body.password||"");
-  if(password.length<8) return Response.json({error:"Password must be at least 8 characters."},{status:400,headers:CORS});
+  const passwordMissing=[];if(password.length<8)passwordMissing.push("at least 8 characters");if(!/[A-Z]/.test(password))passwordMissing.push("1 uppercase letter");if(!/[a-z]/.test(password))passwordMissing.push("1 lowercase letter");if(!/[0-9]/.test(password))passwordMissing.push("1 number");if(!/[^A-Za-z0-9]/.test(password))passwordMissing.push("1 special character");if(passwordMissing.length)return Response.json({error:"Password must contain "+passwordMissing.join(", ")+"."},{status:400,headers:CORS});
   const {error:ue}=await admin.auth.admin.updateUserById(target.id,{password});
   if(ue) return Response.json({error:ue.message},{status:400,headers:CORS});
   const now=new Date().toISOString();
