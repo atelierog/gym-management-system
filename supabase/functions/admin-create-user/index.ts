@@ -59,8 +59,7 @@ Deno.serve(async (req) => {
       400
     );
 
-  if (String(password).length < 8)
-    return json({ error: "Password must be at least 8 characters" }, 400);
+  const passwordMissing=[];if(password.length<8)passwordMissing.push("at least 8 characters");if(!/[A-Z]/.test(password))passwordMissing.push("1 uppercase letter");if(!/[a-z]/.test(password))passwordMissing.push("1 lowercase letter");if(!/[0-9]/.test(password))passwordMissing.push("1 number");if(!/[^A-Za-z0-9]/.test(password))passwordMissing.push("1 special character");if(passwordMissing.length)return json({error:"Password must contain "+passwordMissing.join(", ")+"."},400);
 
   const normalizedLogin = String(login_id).trim();
   const authEmail = normalizedLogin.toLowerCase() + "@gymos.local";
