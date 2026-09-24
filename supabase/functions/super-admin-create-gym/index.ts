@@ -72,7 +72,7 @@ async function sendOwnerWelcomeEmail(args:{gymId:string,gymName:string,ownerName
       </div>
     </div>`;
     const rr=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({from,to:[args.ownerEmail],subject,text,html,idempotencyKey:"gymos-gym-owner-welcome-"+args.gymId})});
-    if(!rr.ok){return {sent:false,reason:"Welcome email could not be sent."};}
+    if(!rr.ok){let detail="Welcome email could not be sent.";try{const body=await rr.json();if(body?.message)detail=body.message;}catch{}return {sent:false,reason:"Resend: "+detail};}
     const result=await rr.json();
     return {sent:true,id:result?.id||null};
   }catch(e){
@@ -105,7 +105,14 @@ Deno.serve(async (req)=>{
   const requestedLogin=String(body.login_id||"").trim();
   const password=String(body.password||"");
 
-  if(!name||!ownerName||!ownerEmail||password.length<8) return Response.json({error:"Gym name, owner name, owner email and an 8+ character password are required"},{status:400,headers:CORS});
+  const passwordRequirements=[];
+  if(password.length<8) passwordRequirements.push("at least 8 characters");
+  if(!/[A-Z]/.test(password)) passwordRequirements.push("1 uppercase letter");
+  if(!/[a-z]/.test(password)) passwordRequirements.push("1 lowercase letter");
+  if(!/[0-9]/.test(password)) passwordRequirements.push("1 number");
+  if(!/[^A-Za-z0-9]/.test(password)) passwordRequirements.push("1 special character");
+  if(!name||!ownerName||!ownerEmail) return Response.json({error:"Gym name, owner name and owner email are required."},{status:400,headers:CORS});
+  if(passwordRequirements.length) return Response.json({error:"Password must contain "+passwordRequirements.join(", ")+"."},{status:400,headers:CORS});
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) return Response.json({error:"Enter a valid owner email address."},{status:400,headers:CORS});
 
   const base=(requestedLogin||name).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";
