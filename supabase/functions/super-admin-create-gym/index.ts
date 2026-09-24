@@ -14,7 +14,7 @@ async function sendOwnerWelcomeEmail(args:{gymId:string,gymName:string,ownerName
     const rows=await sql`select decrypted_secret from vault.decrypted_secrets where name='gymos_resend_api_key' limit 1`;
     const key=String(rows[0]?.decrypted_secret||"");
     if(!key) return {sent:false,reason:"Email service is not configured."};
-    const from=Deno.env.get("GYMOS_FROM_EMAIL")||"Atelier OG GymOS <noreply@atelierog.co>";
+    const from=Deno.env.get("GYMOS_FROM_EMAIL")||"Atelier OG GymOS <noreply@atelierog.co.in>";
     const subject=`Welcome to GymOS — ${args.gymName}`;
     const text=[
       `Welcome to GymOS, ${args.ownerName}.`,
