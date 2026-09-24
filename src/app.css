@@ -1258,3 +1258,14 @@ img,svg{max-width:100%}
 .platform-shell .overlay{z-index:2100!important}
 .platform-floating-alert{z-index:1900!important}
 .platform-notice{z-index:1800}
+
+/* Super Admin filter: custom mobile-safe control instead of native select popup */
+.platform-filter{position:relative;flex:0 0 170px}
+.platform-filter-trigger{width:100%;height:46px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px;border:1px solid #dbe2ea;border-radius:12px;background:#fff;color:#172033;font:inherit;font-weight:700;box-shadow:0 2px 8px #17203308}
+.platform-filter-trigger span{color:#687386;font-weight:600;flex:1;text-align:left}
+.platform-filter-trigger b{font-size:16px;line-height:1}
+.platform-filter-menu{position:absolute;right:0;top:calc(100% + 8px);width:100%;min-width:190px;padding:6px;border:1px solid #e1e6ed;border-radius:14px;background:#fff;box-shadow:0 18px 45px #17203324;z-index:1300}
+.platform-filter-menu button{width:100%;display:flex;align-items:center;justify-content:space-between;border:0;border-radius:9px;background:#fff;color:#172033;padding:12px 11px;text-align:left;font:inherit;font-weight:600}
+.platform-filter-menu button:hover,.platform-filter-menu button.selected{background:#f3f6fa}
+.platform-filter-menu button span{color:#0f766e;font-weight:900}
+@media(max-width:700px){.platform-filter{flex:1}.platform-filter-menu{left:0;right:auto;width:100%;min-width:0}}
