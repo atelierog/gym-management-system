@@ -1276,3 +1276,18 @@ img,svg{max-width:100%}
 .gym-name-row:hover{background:#f8fafc;border-color:#cfd7e2;transform:translateY(-1px)}
 .gym-name-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gym-name-row b{font-size:25px;font-weight:500;color:#8a94a4;line-height:1}
+
+/* Super Admin Gym Accounts: compact, clean controls */
+.platform-search{position:relative;flex:1;display:flex;align-items:center}
+.platform-search>span{position:absolute;left:14px;color:#7b8595;font-size:22px;line-height:1;pointer-events:none}
+.platform-search input{width:100%;height:44px!important;padding:0 14px 0 42px!important;border:1px solid #dbe2ea!important;border-radius:12px!important;background:#fff!important;box-sizing:border-box;font-size:16px!important;box-shadow:0 2px 8px #17203308}
+.platform-filter{flex:0 0 130px}
+.platform-filter-trigger{height:44px!important;padding:0 12px!important;border-radius:12px!important;font-size:14px!important;font-weight:700!important}
+.platform-filter-trigger span{font-size:14px}
+.platform-filter-menu{min-width:160px!important}
+@media(max-width:700px){
+  .platform-toolbar{display:flex!important;gap:8px!important;align-items:center!important}
+  .platform-search{min-width:0}
+  .platform-filter{flex:0 0 108px}
+  .platform-filter-trigger{padding:0 9px!important}
+}
