@@ -33,15 +33,182 @@ function DuesTable({memberships,members,onCollect}){return <section className="p
 function PaymentForm({members,memberships,onSubmit,selectedMembership=null}){const[memberId,setMemberId]=useState(selectedMembership?.member_id||""),items=memberships.filter(m=>m.member_id===memberId&&Number(m.amount_due||0)>0),[membershipId,setMembershipId]=useState(selectedMembership?.id||""),membership=items.find(m=>m.id===membershipId)||selectedMembership,due=Number(membership?.amount_due||0);return <form onSubmit={onSubmit} className="form"><label>Member<select name="member_id" value={memberId} onChange={e=>{setMemberId(e.target.value);setMembershipId("")}} disabled={!!selectedMembership} required><option value="">Select member</option>{members.map(m=><option value={m.id} key={m.id}>{m.full_name} · {m.login_id}</option>)}</select></label><label>Membership<select name="membership_id" value={membershipId} onChange={e=>setMembershipId(e.target.value)} disabled={!!selectedMembership} required><option value="">Select unpaid membership</option>{items.map(m=><option value={m.id} key={m.id}>{m.start_date} → {m.expiry_date} · Due {money(m.amount_due)}</option>)}</select></label><label>Outstanding<input value={money(due)} readOnly/></label><label>Amount to collect<input name="amount" type="number" min="1" max={due||1} step="0.01" defaultValue={due||""} required/></label><label>Method<select name="method" defaultValue="cash"><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="bank_transfer">Bank transfer</option></select></label><button className="primary wide">Record payment</button></form>}
 function UserForm({onSubmit,role}){return <form onSubmit={onSubmit} className="form"><label>Full name<input name="full_name" required/></label><label>{role==="member"?"Member ID":"Trainer ID"}<input name="login_id" required placeholder={role==="member"?"MEM001":"TRN001"}/></label><label>Phone<input name="phone" inputMode="tel"/></label><label>Email <small>(optional)</small><input name="email" type="email" placeholder="staff@example.com"/></label><PasswordField name="password" label="Initial password"/><input type="hidden" name="role" value={role}/><button className="primary wide">Create {role}</button></form>}
 function PeopleTable({people,onToggle,onEdit,onReset,onDelete}){return <section className="panel"><div className="table people-table"><div className="tr th"><span>Name</span><span>ID</span><span>Phone</span><span>Status</span><span>Action</span></div>{people.map(p=><div className="tr" key={p.id}><span><b>{p.full_name}</b></span><span>{p.login_id}</span><span>{p.phone||"—"}</span><span>{p.status}</span><span className="people-actions"><button className="secondary" onClick={()=>onEdit(p)}>Edit</button><button className="secondary" onClick={()=>onReset&&onReset(p)}>Reset password</button><button className="secondary" onClick={()=>onToggle(p.id,p.status)}>{p.status==="active"?"Deactivate":"Activate"}</button>{p.role==="member"&&<button className="danger-button" onClick={()=>onDelete&&onDelete(p)}>Delete</button>}</span></div>)}</div>{!people.length&&<Empty text="No records yet."/>}</section>}function Table({rows,members}){return <div className="table"><div className="tr th"><span>Person</span><span>Check in</span><span>Check out</span><span>Type</span></div>{rows.map(r=>{const p=members.find(x=>x.id===r.user_id);return <div className="tr" key={r.id}><span>{p?.full_name||r.user_id}</span><span>{new Date(r.check_in).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</span><span>{r.check_out?new Date(r.check_out).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):"Present"}</span><span>{r.checkout_type==="system_auto"?"System Auto-Checkout":r.checkout_type||"—"}</span></div>})}</div>}function PaymentTable({rows,members,memberships=[],plans=[],gym,onEdit}){return <div className="table"><div className="tr th"><span>Receipt</span><span>Member</span><span>Amount</span><span>Method</span><span>Date</span><span></span></div>{rows.map(r=>{const membership=memberships.find(m=>m.id===r.membership_id),plan=plans.find(p=>p.id===membership?.plan_id);return <div className="tr" key={r.id}><span>{r.receipt_no}</span><span>{members.find(x=>x.id===r.member_id)?.full_name||"—"}</span><span>{money(r.amount)}</span><span>{r.method}</span><span>{fmt(r.paid_at)}</span><span><button className="secondary" onClick={()=>printReceipt(r,members.find(x=>x.id===r.member_id),gym,membership,plan)}>Receipt</button> <button className="secondary" onClick={()=>onEdit&&onEdit(r)}>Edit</button></span></div>})}</div>}
-function SuperAdminApp({profile}){const[gyms,setGyms]=useState([]),[owners,setOwners]=useState([]),[modal,setModal]=useState(false),[directory,setDirectory]=useState(null),[selectedGym,setSelectedGym]=useState(null),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[detailBusy,setDetailBusy]=useState(false),[passwordModal,setPasswordModal]=useState(null),[credential,setCredential]=useState(null),[passwordBusy,setPasswordBusy]=useState(false);
-async function load(){const[g,p]=await Promise.all([supabase.from("gyms").select("*").order("created_at",{ascending:false}),supabase.from("profiles").select("id,gym_id,login_id,full_name,role,status,phone,email,created_at,password_change_required,password_reset_at").order("created_at",{ascending:false})]);if(g.error||p.error){setNotice(g.error?.message||p.error?.message||"Could not load platform data.");return}setGyms(g.data||[]);setOwners(p.data||[])}
-useEffect(()=>{load()},[]);
-function suggestId(name){const base=String(name||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";return base+"01"}
-async function createGym(e){e.preventDefault();setBusy(true);const f=new FormData(e.currentTarget),{data,error}=await supabase.functions.invoke("super-admin-create-gym",{body:{name:String(f.get("gym_name")).trim(),owner_name:String(f.get("owner_name")).trim(),owner_phone:String(f.get("owner_phone")||"").trim(),owner_email:String(f.get("owner_email")||"").trim().toLowerCase(),login_id:String(f.get("login_id")||"").trim(),password:String(f.get("password"))}});setBusy(false);if(error||data?.error){let detail=error?.message||data?.error||"Could not create gym.";try{const body=await error?.context?.json();if(body?.error)detail=body.error}catch{}setNotice(detail);return}setEmailResendGymId(data?.email_sent?null:data?.gym?.id||null);setNotice(data?.email_sent?"Gym and Gym Owner account created. Welcome email sent.":"⚠️ Gym created, but welcome email could not be sent. The Gym Owner account was created successfully, but the email could not be delivered.");if(data?.gym){setGyms(x=>[data.gym,...x.filter(g=>g.id!==data.gym.id)])}if(data?.owner){setOwners(x=>[data.owner,...x.filter(p=>p.id!==data.owner.id)])}setModal(false);setCredential({title:"Gym owner credentials",loginId:data?.owner?.login_id,password:data?.temporary_password});load()}
-const memberCount=id=>owners.filter(x=>x.gym_id===id&&x.role==="member").length,trainerCount=id=>owners.filter(x=>x.gym_id===id&&x.role==="trainer").length,owner=id=>owners.find(x=>x.gym_id===id&&x.role==="admin");
-function openGym(g){setSelectedGym(g);setDirectory(null)}
-async function saveDetails(){if(!selectedGym)return;setDetailBusy(true);const o=owner(selectedGym.id);const phone=String(document.getElementById("owner-phone")?.value||"").trim();const plan=String(document.getElementById("gym-plan")?.value||"").trim()||"Not assigned";const{error}=await supabase.functions.invoke("super-admin-update-gym-details",{body:{gym_id:selectedGym.id,phone,platform_plan:plan}});setDetailBusy(false);if(error){setNotice(error.message);return}setGyms(x=>x.map(g=>g.id===selectedGym.id?{...g,platform_plan:plan}:g));setOwners(x=>x.map(p=>p.id===o?.id?{...p,phone:phone||null}:p));setSelectedGym({...selectedGym,platform_plan:plan});setNotice("Gym details updated.");} function makeTempPassword(){const chars="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";const bytes=new Uint32Array(14);crypto.getRandomValues(bytes);return Array.from(bytes,b=>chars[b%chars.length]).join("")}async function resendWelcomeEmail(gymId){setResendBusy(true);setNotice("");const{data,error}=await supabase.functions.invoke("super-admin-resend-owner-welcome",{body:{gym_id:gymId}});setResendBusy(false);if(error||data?.error){setEmailResendGymId(gymId);setNotice("❌ "+(data?.error||error?.message||"Email could not be sent. Please try again."));return}setEmailResendGymId(null);setNotice("✅ Welcome email sent successfully. A new temporary password was issued and the previous temporary password is no longer valid.");if(data?.temporary_password&&selectedGym){const o=owner(selectedGym.id);setCredential({title:"New Gym Owner credentials",loginId:o?.login_id||data.login_id,password:data.temporary_password})}}async function manageOwnerPassword(action,password){const o=owner(selectedGym?.id);if(!o)return;setPasswordBusy(true);const body={user_id:o.id,action};if(action==="reset")body.password=password;const{data,error}=await supabase.functions.invoke("super-admin-manage-owner-password",{body});setPasswordBusy(false);if(error||data?.error){setNotice(error?.message||data?.error||"Password action failed.");return}if(action==="reset"){setCredential({title:"New temporary password",loginId:o.login_id,password:data.temporary_password});setPasswordModal(null)}else setNotice("The owner will be required to change their password on next login.");load()}
-return <div className="platform-shell"><header className="platform-topbar"><div className="platform-brand"><div className="platform-mark">AOG</div><div><b>ATELIER OG</b><small>GYMOS PLATFORM</small></div></div><button className="topbar-signout" onClick={signOut}>Sign out</button></header><main className="platform-main platform-content"><div className="platform-notice">{notice&&<div className={"notice "+(/could not|permission denied|failed|error/i.test(notice)?"notice-error":"")}>{notice}<button onClick={()=>setNotice("")}>×</button></div>}</div><section className="cards platform-cards"><Card t="Total gyms" n={gyms.length} s="Gyms on GymOS" onClick={()=>setDirectory("gyms")}/><Card t="Gym owners" n={owners.filter(x=>x.role==="admin").length} s="Administrator accounts" onClick={()=>setDirectory("owners")}/><Card t="Trainers" n={owners.filter(x=>x.role==="trainer").length} s="Across all gyms" onClick={()=>setDirectory("trainers")}/><Card t="Members" n={owners.filter(x=>x.role==="member").length} s="Across all gyms" onClick={()=>setDirectory("members")}/></section><section className="panel platform-panel"><div className="section-top"><div><h3>Gym accounts</h3><p className="panel-subtitle">Your onboarded gyms and their primary owners.</p></div><span className="live-pill"><i></i> Live</span></div><div className="table"><div className="tr th"><span>Gym</span><span>Owner</span><span>Login ID</span><span>Members</span><span>Trainers</span><span>Status</span></div>{gyms.map(g=>{const o=owner(g.id);return <div className="tr clickable-row" key={g.id} onClick={()=>openGym(g)}><span><b>{g.name}</b></span><span>{o?.full_name||"—"}</span><span>{o?.login_id||"—"}</span><span>{memberCount(g.id)}</span><span>{trainerCount(g.id)}</span><span>{o?.status||"—"}</span></div>})}</div>{!gyms.length&&<div className="platform-empty"><div className="empty-icon">＋</div><h4>Create your first gym</h4><p>Add a gym and its owner account to start using GymOS.</p><button className="secondary" onClick={()=>setModal(true)}>Create your first gym</button></div>}</section></main>{directory&&<Modal title={directory==="gyms"?"All gyms":directory==="owners"?"Gym owners":directory==="trainers"?"Trainers":"Members"} onClose={()=>setDirectory(null)}><div className="directory-list">{(directory==="gyms"?gyms:owners.filter(x=>x.role===(directory==="owners"?"admin":directory==="trainers"?"trainer":"member"))).map(item=>{const g=directory==="gyms"?item:gyms.find(x=>x.id===item.gym_id);const o=directory==="gyms"?owner(item.id):item;return <button className="directory-item" key={item.id} onClick={()=>directory==="gyms"?openGym(item):g&&openGym(g)}><span><b>{directory==="gyms"?item.name:o?.full_name}</b><small>{directory==="gyms"?(o?.full_name||"No owner"):((g?.name||"")+(o?.phone?" · "+o.phone:""))}</small></span><strong>›</strong></button>})}{!(directory==="gyms"?gyms:owners.filter(x=>x.role===(directory==="owners"?"admin":directory==="trainers"?"trainer":"member"))).length&&<div className="directory-empty">No records yet.</div>}</div></Modal>}{selectedGym&&<Modal title={selectedGym.name} onClose={()=>setSelectedGym(null)}><div className="detail-grid"><div><span>Owner</span><b>{owner(selectedGym.id)?.full_name||"—"}</b></div><div><span>Email</span><b>{owner(selectedGym.id)?.email||"—"}</b></div><div><span>Login ID</span><b>{owner(selectedGym.id)?.login_id||"—"}</b></div><div><span>Status</span><b>{owner(selectedGym.id)?.status||"—"}</b></div><div><span>Created</span><b>{new Date(selectedGym.created_at).toLocaleDateString()}</b></div><div><span>Password status</span><b>{owner(selectedGym.id)?.password_change_required?"Change required":"Owner-managed"}</b></div><div><span>Last reset</span><b>{owner(selectedGym.id)?.password_reset_at?new Date(owner(selectedGym.id).password_reset_at).toLocaleString("en-IN"):"—"}</b></div><label className="detail-field">Owner phone<input id="owner-phone" defaultValue={owner(selectedGym.id)?.phone||""} type="tel" placeholder="Enter phone number"/></label><label className="detail-field">GymOS plan<input id="gym-plan" defaultValue={selectedGym.platform_plan||"Not assigned"} placeholder="e.g. Standard"/></label></div><div className="detail-actions">{owner(selectedGym.id)?.phone&&<a className="secondary" href={"tel:"+owner(selectedGym.id).phone}>Call owner</a>}<button className="secondary" onClick={()=>resendWelcomeEmail(selectedGym.id)} disabled={resendBusy}>{resendBusy?"Sending…":"Resend Welcome Email"}</button><button className="secondary" onClick={()=>setPasswordModal({mode:"reset"})}>Reset password</button><button className="secondary" onClick={()=>manageOwnerPassword("force_change")}>Force password change</button><button className="primary" onClick={saveDetails} disabled={detailBusy}>{detailBusy?"Saving…":"Save details"}</button></div></Modal>}{modal&&<Modal title="Create new gym" onClose={()=>setModal(false)}><form className="form" onSubmit={createGym}><label>Gym name<input name="gym_name" required placeholder="Bodyline Gym" onChange={e=>{const id=e.currentTarget.form?.elements.login_id;if(id&&!id.dataset.edited)id.value=suggestId(e.target.value)}}/></label><label>Gym Owner name<input name="owner_name" required placeholder="Owner full name"/></label><label>Owner phone<input name="owner_phone" type="tel" placeholder="10-digit mobile number"/></label><label>Owner email<input name="owner_email" type="email" required placeholder="owner@example.com"/><small>This email will receive the GymOS welcome email and login details.</small></label><label>Owner Login ID<input name="login_id" defaultValue="GYM01" onInput={e=>e.currentTarget.dataset.edited="true"}/><small>Example: BODYLINE01. This becomes the owner's login ID.</small></label><PasswordField name="password" label="Initial password"/><button className="primary wide" disabled={busy}>{busy?"Creating…":"Create Gym + Owner"}</button></form></Modal>}{credential&&<Modal title={credential.title} onClose={()=>setCredential(null)}><div className="credential-box"><p><b>Login ID</b></p><strong>{credential.loginId}</strong><p><b>Temporary password</b></p><code>{credential.password}</code><small>Save or copy this now. GymOS does not store the readable password. The owner must change it on their next login.</small><button className="primary wide" onClick={()=>navigator.clipboard?.writeText(`Login ID: ${credential.loginId}\nTemporary password: ${credential.password}`)}>Copy credentials</button></div></Modal>}{passwordModal?.mode==="reset"&&<Modal title="Reset Gym Owner password" onClose={()=>setPasswordModal(null)}><form className="form" onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);manageOwnerPassword("reset",String(f.get("password")||""))}}><PasswordField name="password" label="New temporary password" placeholder="Create a temporary password"/><small>The owner will be forced to create a new private password after signing in.</small><button className="primary wide" disabled={passwordBusy}>{passwordBusy?"Resetting…":"Reset password"}</button></form></Modal>}</div>}
+function SuperAdminApp({profile}){
+  const[gyms,setGyms]=useState([]),[owners,setOwners]=useState([]),[modal,setModal]=useState(false),[selectedGym,setSelectedGym]=useState(null),[notice,setNotice]=useState(null),[busy,setBusy]=useState(false),[passwordModal,setPasswordModal]=useState(null),[credential,setCredential]=useState(null),[passwordBusy,setPasswordBusy]=useState(false),[search,setSearch]=useState(""),[statusFilter,setStatusFilter]=useState("all"),[refreshing,setRefreshing]=useState(false),[resendBusy,setResendBusy]=useState(false),[emailResendGymId,setEmailResendGymId]=useState(null);
 
+  async function readError(error,data,fallback){
+    let detail=data?.error||error?.message||fallback;
+    try{const body=await error?.context?.json();if(body?.error)detail=body.error}catch{}
+    return detail;
+  }
+  function showError(title,detail){
+    setNotice({type:"error",title,message:detail,detail});
+  }
+  function showSuccess(title,message){setNotice({type:"success",title,message});}
+  async function load(){
+    setRefreshing(true);
+    const[g,p]=await Promise.all([
+      supabase.from("gyms").select("*").order("created_at",{ascending:false}),
+      supabase.from("profiles").select("id,gym_id,login_id,full_name,role,status,phone,email,created_at,password_change_required,password_reset_at").eq("role","admin").order("created_at",{ascending:false})
+    ]);
+    setRefreshing(false);
+    if(g.error||p.error){showError("Could not load Super Admin data",g.error?.message||p.error?.message||"The platform data could not be loaded.");return}
+    setGyms(g.data||[]);setOwners(p.data||[]);
+  }
+  useEffect(()=>{load()},[]);
+  function suggestId(name){const base=String(name||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";return base+"01"}
+  function passwordError(p){
+    const missing=[];
+    if(String(p||"").length<8)missing.push("at least 8 characters");
+    if(!/[A-Z]/.test(p))missing.push("1 uppercase letter");
+    if(!/[a-z]/.test(p))missing.push("1 lowercase letter");
+    if(!/[0-9]/.test(p))missing.push("1 number");
+    if(!/[^A-Za-z0-9]/.test(p))missing.push("1 special character");
+    return missing.length?"Password must contain "+missing.join(", ")+".":null;
+  }
+  async function createGym(e){
+    e.preventDefault();setBusy(true);setNotice(null);
+    const f=new FormData(e.currentTarget),password=String(f.get("password")||""),validation=passwordError(password);
+    if(validation){setBusy(false);showError("Unable to create Gym Owner",validation);return}
+    const{data,error}=await supabase.functions.invoke("super-admin-create-gym",{body:{
+      name:String(f.get("gym_name")).trim(),
+      owner_name:String(f.get("owner_name")).trim(),
+      owner_phone:String(f.get("owner_phone")||"").trim(),
+      owner_email:String(f.get("owner_email")||"").trim().toLowerCase(),
+      login_id:String(f.get("login_id")||"").trim(),
+      password
+    }});
+    setBusy(false);
+    if(error||data?.error){showError("Unable to create Gym",await readError(error,data,"The Gym and Owner account could not be created."));return}
+    setNotice(null);
+    if(data?.gym)setGyms(x=>[data.gym,...x.filter(g=>g.id!==data.gym.id)]);
+    if(data?.owner)setOwners(x=>[data.owner,...x.filter(p=>p.id!==data.owner.id)]);
+    setModal(false);
+    setCredential({title:"Gym Owner credentials",loginId:data?.owner?.login_id,password:data?.temporary_password});
+    if(data?.email_sent)showSuccess("Gym created","Gym and Gym Owner account were created. The welcome email was sent.");
+    else{setEmailResendGymId(data?.gym?.id||null);showError("Gym created, but welcome email failed","The Gym Owner account was created, but the welcome email could not be delivered. Use Resend Welcome Email to try again.");}
+    load();
+  }
+  const owner=id=>owners.find(x=>x.gym_id===id);
+  const filteredGyms=gyms.filter(g=>{
+    const o=owner(g.id),q=search.trim().toLowerCase(),matchesSearch=!q||[g.name,o?.full_name,o?.login_id].some(v=>String(v||"").toLowerCase().includes(q));
+    const status=g.platform_status||"active";
+    return matchesSearch&&(statusFilter==="all"||status===statusFilter);
+  });
+  function openGym(g){setSelectedGym(g)}
+  async function updateAccess(gymId,gymStatus,ownerStatus){
+    const{data,error}=await supabase.functions.invoke("super-admin-update-gym-details",{body:{gym_id:gymId,gym_status:gymStatus,owner_status:ownerStatus}});
+    if(error||data?.error){showError("Unable to update access",await readError(error,data,"The platform access change could not be saved."));return false}
+    setGyms(x=>x.map(g=>g.id===gymId?{...g,...(data.gym||{}),platform_status:gymStatus}:g));
+    setOwners(x=>x.map(o=>o.gym_id===gymId?{...o,status:ownerStatus}:o));
+    setSelectedGym(x=>x&&x.id===gymId?{...x,...(data.gym||{}),platform_status:gymStatus}:x);
+    showSuccess("Access updated","The platform access change was saved.");
+    return true;
+  }
+  async function setGymStatus(status){
+    if(!selectedGym)return;
+    if(!window.confirm((status==="suspended"?"Suspend ":"Activate ")+selectedGym.name+"?"))return;
+    const o=owner(selectedGym.id),ownerStatus=o?.status||"active";
+    await updateAccess(selectedGym.id,status,ownerStatus);
+  }
+  async function setOwnerStatus(status){
+    if(!selectedGym)return;
+    const o=owner(selectedGym.id);if(!o)return;
+    if(!window.confirm((status==="suspended"?"Suspend ":"Activate ")+"Gym Owner access?"))return;
+    await updateAccess(selectedGym.id,selectedGym.platform_status||"active",status);
+  }
+  async function resendWelcomeEmail(gymId){
+    setResendBusy(true);setNotice(null);
+    const{data,error}=await supabase.functions.invoke("super-admin-resend-owner-welcome",{body:{gym_id:gymId}});
+    setResendBusy(false);
+    if(error||data?.error){setEmailResendGymId(gymId);showError("Welcome email failed",await readError(error,data,"The welcome email could not be sent."));return}
+    setEmailResendGymId(null);
+    showSuccess("Welcome email sent","A new temporary password was issued and the previous temporary password is no longer valid.");
+    const o=owner(gymId);if(data?.temporary_password)setCredential({title:"New Gym Owner credentials",loginId:o?.login_id||data.login_id,password:data.temporary_password});
+  }
+  async function manageOwnerPassword(action,password){
+    const o=owner(selectedGym?.id);if(!o)return;
+    setPasswordBusy(true);setNotice(null);
+    const body={user_id:o.id,action};if(action==="reset")body.password=password;
+    const{data,error}=await supabase.functions.invoke("super-admin-manage-owner-password",{body});
+    setPasswordBusy(false);
+    if(error||data?.error){showError(action==="reset"?"Unable to reset password":"Unable to change password access",await readError(error,data,"The password action failed."));return}
+    if(action==="reset"){setCredential({title:"New temporary password",loginId:o.login_id,password:data.temporary_password});setPasswordModal(null);showSuccess("Password reset","A new temporary password was generated. The owner must change it after login.");}
+    else showSuccess("Password change required","The owner will be required to change their password on next login.");
+    load();
+  }
+  function Notice(){
+    if(!notice)return null;
+    return <div className={"notice "+(notice.type==="error"?"notice-error":"")} role={notice.type==="error"?"alert":"status"}>
+      <div><b>{notice.title}</b><div>{notice.message}</div>{notice.type==="error"&&notice.detail&&<details><summary>Show real error reason</summary><code>{notice.detail}</code></details>}</div>
+      {notice.type==="error"&&emailResendGymId&&<button className="secondary" onClick={()=>resendWelcomeEmail(emailResendGymId)} disabled={resendBusy}>{resendBusy?"Sending…":"Resend Welcome Email"}</button>}
+      <button onClick={()=>setNotice(null)} aria-label="Dismiss">×</button>
+    </div>
+  }
+  const activeCount=gyms.filter(g=>(g.platform_status||"active")==="active").length;
+  const suspendedCount=gyms.filter(g=>(g.platform_status||"active")==="suspended").length;
+  const greeting=(()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening"})();
+
+  return <div className="platform-shell">
+    <header className="platform-topbar"><div className="platform-brand"><div className="platform-mark">AOG</div><div><b>ATELIER OG</b><small>GYMOS PLATFORM</small></div></div><button className="topbar-signout" onClick={signOut}>Sign out</button></header>
+    <main className="platform-main platform-content">
+      <div className="platform-notice"><Notice/></div>
+      <section className="platform-welcome"><p>{greeting}, {profile.full_name||"Super Admin"}</p><h2>Welcome to GymOS</h2><span>Manage your GymOS platform and Gym Owner access.</span></section>
+      <section className="platform-actions"><button className="primary" onClick={()=>setModal(true)}>+ Add Gym</button><button className="secondary" onClick={load} disabled={refreshing}>{refreshing?"Refreshing…":"↻ Refresh"}</button></section>
+      <section className="cards platform-cards">
+        <Card t="Gyms" n={gyms.length} s="GymOS tenants"/>
+        <Card t="Active gyms" n={activeCount} s="Platform access active"/>
+        <Card t="Gym owners" n={owners.length} s="Owner accounts"/>
+        <Card t="Suspended gyms" n={suspendedCount} s="Platform access suspended"/>
+      </section>
+      <section className="panel platform-panel">
+        <div className="section-top"><div><h3>Gym Accounts</h3><p className="panel-subtitle">Manage GymOS gyms and platform access. Gym operations stay with the Gym Owner.</p></div></div>
+        <div className="platform-toolbar"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search gym, owner or login ID"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All</option><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
+        <div className="table"><div className="tr th"><span>Gym</span><span>Owner</span><span>Login ID</span><span>Owner Access</span><span>Gym Status</span></div>
+          {filteredGyms.map(g=>{const o=owner(g.id);return <div className="tr clickable-row" key={g.id} onClick={()=>openGym(g)}><span><b>{g.name}</b></span><span>{o?.full_name||"—"}</span><span>{o?.login_id||"—"}</span><span>{o?.status==="active"?"Active":"Suspended"}</span><span>{(g.platform_status||"active")==="active"?"Active":"Suspended"}</span></div>})}
+        </div>
+        {!filteredGyms.length&&<div className="platform-empty"><h4>{gyms.length?"No matching gyms":"No gyms yet"}</h4><p>{gyms.length?"Try another search or filter.":"Create a gym and its owner account to start using GymOS."}</p>{!gyms.length&&<button className="secondary" onClick={()=>setModal(true)}>Create your first gym</button>}</div>}
+      </section>
+    </main>
+
+    {selectedGym&&<Modal title={selectedGym.name} onClose={()=>setSelectedGym(null)}>
+      <div className="detail-grid">
+        <div><span>Gym status</span><b>{(selectedGym.platform_status||"active")==="active"?"🟢 Active":"🟠 Suspended"}</b></div>
+        <div><span>Created</span><b>{new Date(selectedGym.created_at).toLocaleDateString("en-IN")}</b></div>
+        <div><span>Owner</span><b>{owner(selectedGym.id)?.full_name||"—"}</b></div>
+        <div><span>Owner email</span><b>{owner(selectedGym.id)?.email||"—"}</b></div>
+        <div><span>Login ID</span><b>{owner(selectedGym.id)?.login_id||"—"}</b></div>
+        <div><span>Owner access</span><b>{owner(selectedGym.id)?.status==="active"?"🟢 Active":"🟠 Suspended"}</b></div>
+        <div><span>Password status</span><b>{owner(selectedGym.id)?.password_change_required?"Change required":"Owner-managed"}</b></div>
+        <div><span>Last password reset</span><b>{owner(selectedGym.id)?.password_reset_at?new Date(owner(selectedGym.id).password_reset_at).toLocaleString("en-IN"):"—"}</b></div>
+        <div><span>Owner phone</span><b>{owner(selectedGym.id)?.phone||"—"}</b></div>
+      </div>
+      <div className="detail-actions">
+        <button className="secondary" onClick={()=>resendWelcomeEmail(selectedGym.id)} disabled={resendBusy}>{resendBusy?"Sending…":"Resend Welcome Email"}</button>
+        <button className="secondary" onClick={()=>setPasswordModal({mode:"reset"})}>Reset password</button>
+        <button className="secondary" onClick={()=>{if(window.confirm("Force this Gym Owner to change their password on next login?"))manageOwnerPassword("force_change")}}>Force password change</button>
+        {owner(selectedGym.id)?.status==="active"?<button className="secondary" onClick={()=>setOwnerStatus("suspended")}>Suspend Owner Access</button>:<button className="secondary" onClick={()=>setOwnerStatus("active")}>Activate Owner Access</button>}
+        {(selectedGym.platform_status||"active")==="active"?<button className="danger-button" onClick={()=>setGymStatus("suspended")}>Suspend Gym</button>:<button className="primary" onClick={()=>setGymStatus("active")}>Activate Gym</button>}
+      </div>
+    </Modal>}
+
+    {modal&&<Modal title="Create new gym" onClose={()=>setModal(false)}>
+      <form className="form" onSubmit={createGym}>
+        <label>Gym name<input name="gym_name" required placeholder="Bodyline Gym" onChange={e=>{const id=e.currentTarget.form?.elements.login_id;if(id&&!id.dataset.edited)id.value=suggestId(e.target.value)}}/></label>
+        <label>Gym Owner name<input name="owner_name" required placeholder="Owner full name"/></label>
+        <label>Owner phone<input name="owner_phone" type="tel" placeholder="10-digit mobile number"/></label>
+        <label>Owner email<input name="owner_email" type="email" required placeholder="owner@example.com"/><small>This email receives the GymOS welcome email and login details.</small></label>
+        <label>Owner Login ID<input name="login_id" defaultValue="GYM01" onInput={e=>e.currentTarget.dataset.edited="true"}/><small>Example: BODYLINE01.</small></label>
+        <PasswordField name="password" label="Initial password"/>
+        <small>Password must contain 8+ characters, uppercase, lowercase, number and special character.</small>
+        <button className="primary wide" disabled={busy}>{busy?"Creating…":"Create Gym + Owner"}</button>
+      </form>
+    </Modal>}
+
+    {credential&&<Modal title={credential.title} onClose={()=>setCredential(null)}><div className="credential-box"><p><b>Login ID</b></p><strong>{credential.loginId}</strong><p><b>Temporary password</b></p><code>{credential.password}</code><small>Save or copy this now. GymOS does not store the readable password. The owner must change it after login.</small><button className="primary wide" onClick={()=>navigator.clipboard?.writeText("Login ID: "+credential.loginId+"\\nTemporary password: "+credential.password)}>Copy credentials</button></div></Modal>}
+
+    {passwordModal?.mode==="reset"&&<Modal title="Reset Gym Owner password" onClose={()=>setPasswordModal(null)}><form className="form" onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget),p=String(f.get("password")||""),v=passwordError(p);if(v){showError("Unable to reset password",v);return}manageOwnerPassword("reset",p)}}><PasswordField name="password" label="New temporary password" placeholder="Create a temporary password"/><small>Password must contain 8+ characters, uppercase, lowercase, number and special character.</small><button className="primary wide" disabled={passwordBusy}>{passwordBusy?"Resetting…":"Reset password"}</button></form></Modal>}
+  </div>
+}
 function PasswordChangeGate({onComplete}){const[busy,setBusy]=useState(false),[notice,setNotice]=useState("");async function submit(e){e.preventDefault();const f=new FormData(e.currentTarget),p=String(f.get("password")||""),q=String(f.get("confirm")||"");if(p!==q){setNotice("Passwords do not match.");return}if(p.length<8){setNotice("Password must be at least 8 characters.");return}setBusy(true);const{error}=await supabase.auth.updateUser({password:p});if(error){setNotice(error.message);setBusy(false);return}const{error:ce}=await supabase.functions.invoke("complete-password-change",{body:{}});if(ce){setNotice(ce.message);setBusy(false);return}setBusy(false);const next=await currentProfile();onComplete(next)}return <div className="login"><div className="login-card password-gate"><div className="platform-mark">AOG</div><h1>Change your password</h1><p>Your GymOS account was created or reset with a temporary password. Create your private password to continue.</p>{notice&&<div className="notice notice-error">{notice}</div>}<form className="form" onSubmit={submit}><PasswordField name="password" label="New password" autoFocus/><PasswordField name="confirm" label="Confirm password" placeholder="Repeat password"/><button className="primary wide" disabled={busy}>{busy?"Saving…":"Set my password"}</button></form><button className="logout" onClick={signOut}>Sign out</button></div></div>}
 function App(){const[profile,setProfile]=useState(undefined);useEffect(()=>{const t=setTimeout(()=>setProfile(p=>p===undefined?null:p),5000);return()=>clearTimeout(t)},[]);useEffect(()=>{(async()=>{try{setProfile(await currentProfile())}catch{setProfile(null)}})()},[]);useEffect(()=>{if(!supabase)return;const{data}=supabase.auth.onAuthStateChange((event,session)=>{if(!session){setProfile(null);return}currentProfile().then(setProfile).catch(()=>setProfile(null))});return()=>data.subscription.unsubscribe()},[]);if(profile===undefined)return <div className="login"><div className="login-card"><h1>GYM<span>OS</span></h1><p>Loading…</p></div></div>;if(!profile)return <Login onLogin={async()=>{try{setProfile(await currentProfile())}catch{setProfile(null)}}}/>;if(profile.password_change_required)return <PasswordChangeGate onComplete={setProfile}/>;return profile.role==="super_admin"?<SuperAdminApp profile={profile}/>:profile.role==="admin"?<AdminApp profile={profile}/>:<UserPortal profile={profile}/>}class BootError extends React.Component{constructor(p){super(p);this.state={error:null}}static getDerivedStateFromError(error){return{error}}render(){if(this.state.error)return <div className="login"><div className="login-card"><div className="platform-mark">AOG</div><h1>GYM<span>OS</span></h1><p>GymOS could not start.</p><div className="error">{String(this.state.error?.message||this.state.error).replace(/[<>]/g,"")}</div><div className="support-box"><b>Need help?</b><span>If GymOS is not loading, contact Atelier OG Support.</span><a className="primary wide" href="mailto:atelierog.co@gmail.com?subject=GymOS%20Support%20Request">Email Atelier OG Support</a><small>atelierog.co@gmail.com</small></div></div></div>;return this.props.children}}createRoot(document.getElementById("root")).render(<BootError><App/></BootError>);
