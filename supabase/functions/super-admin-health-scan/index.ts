@@ -19,12 +19,13 @@ Deno.serve(async(req)=>{
     ["Memberships",admin.from("memberships").select("id,gym_id,member_id,start_date,expiry_date,status,payment_status,amount,amount_paid,amount_due,due_date,created_at")],
     ["Attendance",admin.from("attendance").select("id,gym_id,user_id,check_in,check_out,checkout_type,status")],
     ["Payments",admin.from("payments").select("id,gym_id,member_id,membership_id,receipt_no,amount,method,paid_at")],
-    ["Audit logs",admin.from("audit_logs").select("id,gym_id,action,entity,entity_id,details,created_at").order("created_at",{ascending:false}).limit(300)]
+    ["Audit logs",admin.from("audit_logs").select("id,gym_id,action,entity,entity_id,details,created_at").order("created_at",{ascending:false}).limit(300)],
+    ["Platform errors",admin.from("platform_error_events").select("id,gym_id,actor_id,actor_role,source,operation,error_code,message,detail,status,remediation,created_at,resolved_at").order("created_at",{ascending:false}).limit(200)]
   ];
   const settled=await Promise.all(queries.map(async([name,q])=>({name,result:await q})));
   const readErrors=settled.filter(x=>x.result.error).map(x=>({name:x.name,error:x.result.error}));
   const get=(name)=>settled.find(x=>x.name===name)?.result?.data||[];
-  const gyms=get("Gyms"),profiles=get("Profiles"),memberships=get("Memberships"),attendance=get("Attendance"),payments=get("Payments"),auditLogs=get("Audit logs");
+  const gyms=get("Gyms"),profiles=get("Profiles"),memberships=get("Memberships"),attendance=get("Attendance"),payments=get("Payments"),auditLogs=get("Audit logs"),platformErrors=get("Platform errors");
   const gymById=new Map(gyms.map(g=>[g.id,g])), profileById=new Map(profiles.map(p=>[p.id,p]));
   const issues=[]; const add=(gym,severity,type,message,detail)=>issues.push({id:crypto.randomUUID(),gym_id:gym?.id||null,gym_name:gym?.name||"Platform",severity,type,message,detail:detail||null});
   for(const r of readErrors)add(null,"critical","SYSTEM_READ_ERROR","Super Admin could not read the "+r.name+" area.","Database/API reason: "+r.error.message);
@@ -61,6 +62,17 @@ Deno.serve(async(req)=>{
   for(const a of recentFailures){
     const g=gymById.get(a.gym_id);
     add(g,"error","RECENT_OPERATION_FAILURE","A recent operation failure was recorded.","Action: "+a.action+" · "+new Date(a.created_at).toLocaleString("en-IN"));
+  }
+
+  for(const e of (platformErrors||[]).filter(x=>x.status==="open"||x.status==="investigating").slice(0,100)){
+    const g=gymById.get(e.gym_id);
+    const severity=e.error_code==="AUTHENTICATION"?"warning":"error";
+    add(g,severity,"PLATFORM_OPERATION_ERROR",e.message,
+      (e.source||"App")+" · "+(e.operation||"operation")+
+      (e.actor_role?" · role: "+e.actor_role:"")+
+      (e.error_code?" · code: "+e.error_code:"")+
+      " · "+new Date(e.created_at).toLocaleString("en-IN")+
+      (e.detail?" · "+e.detail:""));
   }
 
   const summary={critical:issues.filter(i=>i.severity==="critical").length,error:issues.filter(i=>i.severity==="error").length,warning:issues.filter(i=>i.severity==="warning").length,info:issues.filter(i=>i.severity==="info").length};
