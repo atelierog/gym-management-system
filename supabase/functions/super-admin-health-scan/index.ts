@@ -13,18 +13,21 @@ Deno.serve(async(req)=>{
   const {data:pa}=await admin.from("platform_admins").select("status").eq("id",actor.id).single();
   if(!pa||pa.status!=="active") return Response.json({error:"Super Admin access required"},{status:403,headers:CORS});
 
-  const [{data:gyms,error:ge},{data:profiles,error:pe},{data:memberships,error:me},{data:attendance,error:ae2},{data:payments,error:payE},{data:auditLogs,error:le}]=await Promise.all([
-    admin.from("gyms").select("id,name,auto_checkout_enabled,auto_checkout_minutes,timezone,latitude,longitude,allowed_radius_m,platform_status").order("created_at",{ascending:false}),
-    admin.from("profiles").select("id,gym_id,full_name,login_id,role,status,email,phone,created_at"),
-    admin.from("memberships").select("id,gym_id,member_id,start_date,expiry_date,status,payment_status,amount,amount_paid,amount_due,due_date,created_at"),
-    admin.from("attendance").select("id,gym_id,user_id,check_in,check_out,checkout_type,status"),
-    admin.from("payments").select("id,gym_id,member_id,membership_id,receipt_no,amount,method,paid_at"),
-    admin.from("audit_logs").select("id,gym_id,action,entity,entity_id,details,created_at").order("created_at",{ascending:false}).limit(300)
-  ]);
-  if(ge||pe||me||ae2||payE||le) return Response.json({error:"The platform health scan could not read one or more system areas."},{status:500,headers:CORS});
-
-  const gymById=new Map((gyms||[]).map(g=>[g.id,g])), profileById=new Map((profiles||[]).map(p=>[p.id,p]));
+  const queries=[
+    ["Gyms",admin.from("gyms").select("id,name,auto_checkout_enabled,auto_checkout_minutes,timezone,latitude,longitude,allowed_radius_m,platform_status").order("created_at",{ascending:false})],
+    ["Profiles",admin.from("profiles").select("id,gym_id,full_name,login_id,role,status,email,phone,created_at")],
+    ["Memberships",admin.from("memberships").select("id,gym_id,member_id,start_date,expiry_date,status,payment_status,amount,amount_paid,amount_due,due_date,created_at")],
+    ["Attendance",admin.from("attendance").select("id,gym_id,user_id,check_in,check_out,checkout_type,status")],
+    ["Payments",admin.from("payments").select("id,gym_id,member_id,membership_id,receipt_no,amount,method,paid_at")],
+    ["Audit logs",admin.from("audit_logs").select("id,gym_id,action,entity,entity_id,details,created_at").order("created_at",{ascending:false}).limit(300)]
+  ];
+  const settled=await Promise.all(queries.map(async([name,q])=>({name,result:await q})));
+  const readErrors=settled.filter(x=>x.result.error).map(x=>({name:x.name,error:x.result.error}));
+  const get=(name)=>settled.find(x=>x.name===name)?.result?.data||[];
+  const gyms=get("Gyms"),profiles=get("Profiles"),memberships=get("Memberships"),attendance=get("Attendance"),payments=get("Payments"),auditLogs=get("Audit logs");
+  const gymById=new Map(gyms.map(g=>[g.id,g])), profileById=new Map(profiles.map(p=>[p.id,p]));
   const issues=[]; const add=(gym,severity,type,message,detail)=>issues.push({id:crypto.randomUUID(),gym_id:gym?.id||null,gym_name:gym?.name||"Platform",severity,type,message,detail:detail||null});
+  for(const r of readErrors)add(null,"critical","SYSTEM_READ_ERROR","Super Admin could not read the "+r.name+" area.","Database/API reason: "+r.error.message);
 
   for(const g of gyms||[]){
     const owners=(profiles||[]).filter(p=>p.gym_id===g.id&&p.role==="admin");
