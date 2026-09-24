@@ -34,7 +34,7 @@ function PaymentForm({members,memberships,onSubmit,selectedMembership=null}){con
 function UserForm({onSubmit,role}){return <form onSubmit={onSubmit} className="form"><label>Full name<input name="full_name" required/></label><label>{role==="member"?"Member ID":"Trainer ID"}<input name="login_id" required placeholder={role==="member"?"MEM001":"TRN001"}/></label><label>Phone<input name="phone" inputMode="tel"/></label><label>Email <small>(optional)</small><input name="email" type="email" placeholder="staff@example.com"/></label><PasswordField name="password" label="Initial password"/><input type="hidden" name="role" value={role}/><button className="primary wide">Create {role}</button></form>}
 function PeopleTable({people,onToggle,onEdit,onReset,onDelete}){return <section className="panel"><div className="table people-table"><div className="tr th"><span>Name</span><span>ID</span><span>Phone</span><span>Status</span><span>Action</span></div>{people.map(p=><div className="tr" key={p.id}><span><b>{p.full_name}</b></span><span>{p.login_id}</span><span>{p.phone||"—"}</span><span>{p.status}</span><span className="people-actions"><button className="secondary" onClick={()=>onEdit(p)}>Edit</button><button className="secondary" onClick={()=>onReset&&onReset(p)}>Reset password</button><button className="secondary" onClick={()=>onToggle(p.id,p.status)}>{p.status==="active"?"Deactivate":"Activate"}</button>{p.role==="member"&&<button className="danger-button" onClick={()=>onDelete&&onDelete(p)}>Delete</button>}</span></div>)}</div>{!people.length&&<Empty text="No records yet."/>}</section>}function Table({rows,members}){return <div className="table"><div className="tr th"><span>Person</span><span>Check in</span><span>Check out</span><span>Type</span></div>{rows.map(r=>{const p=members.find(x=>x.id===r.user_id);return <div className="tr" key={r.id}><span>{p?.full_name||r.user_id}</span><span>{new Date(r.check_in).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</span><span>{r.check_out?new Date(r.check_out).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):"Present"}</span><span>{r.checkout_type==="system_auto"?"System Auto-Checkout":r.checkout_type||"—"}</span></div>})}</div>}function PaymentTable({rows,members,memberships=[],plans=[],gym,onEdit}){return <div className="table"><div className="tr th"><span>Receipt</span><span>Member</span><span>Amount</span><span>Method</span><span>Date</span><span></span></div>{rows.map(r=>{const membership=memberships.find(m=>m.id===r.membership_id),plan=plans.find(p=>p.id===membership?.plan_id);return <div className="tr" key={r.id}><span>{r.receipt_no}</span><span>{members.find(x=>x.id===r.member_id)?.full_name||"—"}</span><span>{money(r.amount)}</span><span>{r.method}</span><span>{fmt(r.paid_at)}</span><span><button className="secondary" onClick={()=>printReceipt(r,members.find(x=>x.id===r.member_id),gym,membership,plan)}>Receipt</button> <button className="secondary" onClick={()=>onEdit&&onEdit(r)}>Edit</button></span></div>})}</div>}
 function SuperAdminApp({profile}){
-  const[gyms,setGyms]=useState([]),[owners,setOwners]=useState([]),[modal,setModal]=useState(false),[selectedGym,setSelectedGym]=useState(null),[notice,setNotice]=useState(null),[busy,setBusy]=useState(false),[passwordModal,setPasswordModal]=useState(null),[credential,setCredential]=useState(null),[passwordBusy,setPasswordBusy]=useState(false),[search,setSearch]=useState(""),[statusFilter,setStatusFilter]=useState("all"),[refreshing,setRefreshing]=useState(false),[resendBusy,setResendBusy]=useState(false),[emailResendGymId,setEmailResendGymId]=useState(null);
+  const[gyms,setGyms]=useState([]),[owners,setOwners]=useState([]),[modal,setModal]=useState(false),[selectedGym,setSelectedGym]=useState(null),[notice,setNotice]=useState(null),[busy,setBusy]=useState(false),[passwordModal,setPasswordModal]=useState(null),[credential,setCredential]=useState(null),[passwordBusy,setPasswordBusy]=useState(false),[search,setSearch]=useState(""),[statusFilter,setStatusFilter]=useState("all"),[refreshing,setRefreshing]=useState(false),[resendBusy,setResendBusy]=useState(false),[emailResendGymId,setEmailResendGymId]=useState(null),[healthIssues,setHealthIssues]=useState([]),[healthSummary,setHealthSummary]=useState({critical:0,error:0,warning:0,info:0}),[healthBusy,setHealthBusy]=useState(false),[lastScan,setLastScan]=useState(null),[healthOpen,setHealthOpen]=useState(false),[confirmAction,setConfirmAction]=useState(null);
 
   async function readError(error,data,fallback){
     let detail=data?.error||error?.message||fallback;
@@ -55,7 +55,7 @@ function SuperAdminApp({profile}){
     if(g.error||p.error){showError("Could not load Super Admin data",g.error?.message||p.error?.message||"The platform data could not be loaded.");return}
     setGyms(g.data||[]);setOwners(p.data||[]);
   }
-  useEffect(()=>{load()},[]);
+  async function runHealthScan(){setHealthBusy(true);const{data,error}=await supabase.functions.invoke("super-admin-health-scan",{body:{}});setHealthBusy(false);if(error||data?.error){showError("Health scan failed",await readError(error,data,"The full platform scan could not be completed."));return}setHealthIssues(data?.issues||[]);setHealthSummary(data?.summary||{critical:0,error:0,warning:0,info:0});setLastScan(data?.scanned_at||new Date().toISOString());}\n  useEffect(()=>{load();runHealthScan();const timer=setInterval(runHealthScan,60000);return()=>clearInterval(timer)},[]);
   function suggestId(name){const base=String(name||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"GYM";return base+"01"}
   function passwordError(p){
     const missing=[];
@@ -107,14 +107,14 @@ function SuperAdminApp({profile}){
   }
   async function setGymStatus(status){
     if(!selectedGym)return;
-    if(!window.confirm((status==="suspended"?"Suspend ":"Activate ")+selectedGym.name+"?"))return;
+    setConfirmAction({kind:"gym",status,title:(status==="suspended"?"Suspend ":"Activate ")+selectedGym.name+"?",message:status==="suspended"?"This will block the entire gym from using GymOS.":"This will restore platform access for the gym."});return;
     const o=owner(selectedGym.id),ownerStatus=o?.status||"active";
     await updateAccess(selectedGym.id,status,ownerStatus);
   }
   async function setOwnerStatus(status){
     if(!selectedGym)return;
     const o=owner(selectedGym.id);if(!o)return;
-    if(!window.confirm((status==="suspended"?"Suspend ":"Activate ")+"Gym Owner access?"))return;
+    setConfirmAction({kind:"owner",status,title:(status==="suspended"?"Suspend ":"Activate ")+"Gym Owner access?",message:status==="suspended"?"The Gym Owner will no longer be able to access this gym.":"The Gym Owner will regain access to this gym."});return;
     await updateAccess(selectedGym.id,selectedGym.platform_status||"active",status);
   }
   async function resendWelcomeEmail(gymId){
@@ -154,14 +154,14 @@ function SuperAdminApp({profile}){
     <main className="platform-main platform-content">
       <div className="platform-notice"><Notice/></div>
       <section className="platform-welcome"><p>{greeting}, {profile.full_name||"Super Admin"}</p><h2>Welcome to GymOS</h2><span>Manage your GymOS platform and Gym Owner access.</span></section>
-      <section className="platform-actions"><button className="primary" onClick={()=>setModal(true)}>+ Add Gym</button><button className="secondary" onClick={load} disabled={refreshing}>{refreshing?"Refreshing…":"↻ Refresh"}</button></section>
+      <section className="platform-actions"><button className="primary" onClick={()=>setModal(true)}>+ Add Gym</button><button className="secondary" onClick={load} disabled={refreshing}>{refreshing?"Refreshing…":"↻ Refresh"}</button><button className={"health-button "+(healthSummary.critical+healthSummary.error?"health-alert":"")} onClick={()=>setHealthOpen(true)}>{healthSummary.critical+healthSummary.error+healthSummary.warning>0?"⚠ "+(healthSummary.critical+healthSummary.error+healthSummary.warning)+" issues":"✓ Platform healthy"}</button></section>
       <section className="cards platform-cards">
         <Card t="Gyms" n={gyms.length} s="GymOS tenants"/>
         <Card t="Active gyms" n={activeCount} s="Platform access active"/>
         <Card t="Gym owners" n={owners.length} s="Owner accounts"/>
         <Card t="Suspended gyms" n={suspendedCount} s="Platform access suspended"/>
       </section>
-      <section className="panel platform-panel">
+      <section className="platform-health-strip"><div><span>PLATFORM HEALTH</span><b>{healthSummary.critical+healthSummary.error===0?"No critical errors detected":"Attention required"}</b><small>{healthSummary.critical} critical · {healthSummary.error} errors · {healthSummary.warning} warnings</small></div><button className="secondary" onClick={runHealthScan} disabled={healthBusy}>{healthBusy?"Scanning whole app…":"Run full scan"}</button>{lastScan&&<small className="scan-time">Last checked {new Date(lastScan).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</small>}</section><section className="panel platform-panel">
         <div className="section-top"><div><h3>Gym Accounts</h3><p className="panel-subtitle">Manage GymOS gyms and platform access. Gym operations stay with the Gym Owner.</p></div></div>
         <div className="platform-toolbar"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search gym, owner or login ID"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All</option><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
         <div className="table"><div className="tr th"><span>Gym</span><span>Owner</span><span>Login ID</span><span>Owner Access</span><span>Gym Status</span></div>
@@ -170,6 +170,18 @@ function SuperAdminApp({profile}){
         {!filteredGyms.length&&<div className="platform-empty"><h4>{gyms.length?"No matching gyms":"No gyms yet"}</h4><p>{gyms.length?"Try another search or filter.":"Create a gym and its owner account to start using GymOS."}</p>{!gyms.length&&<button className="secondary" onClick={()=>setModal(true)}>Create your first gym</button>}</div>}
       </section>
     </main>
+
+    {healthIssues.length>0&&<button className="platform-floating-alert" onClick={()=>setHealthOpen(true)} aria-label="Open platform alerts"><span>⚠</span><b>{healthIssues.length}</b><small>Platform alerts</small></button>}
+
+    {healthOpen&&<Modal title="Platform health & alerts" onClose={()=>setHealthOpen(false)}>
+      <div className="health-summary"><div><b>{healthSummary.critical}</b><span>Critical</span></div><div><b>{healthSummary.error}</b><span>Errors</span></div><div><b>{healthSummary.warning}</b><span>Warnings</span></div><div><b>{healthSummary.info}</b><span>Info</span></div></div>
+      <div className="health-head"><div><h4>Full application scan</h4><p>Checked all GymOS tenants, owners, members, trainers, memberships, payments and attendance.</p></div><button className="secondary" onClick={runHealthScan} disabled={healthBusy}>{healthBusy?"Scanning…":"Scan again"}</button></div>
+      <div className="health-list">{healthIssues.length?healthIssues.map(i=><div className={"health-item severity-"+i.severity} key={i.id}><div className="health-icon">{i.severity==="critical"?"!":i.severity==="error"?"×":i.severity==="warning"?"!":"i"}</div><div><b>{i.message}</b><span>{i.gym_name}{i.detail?" · "+i.detail:""}</span><small>{i.type.replaceAll("_"," ")}</small></div></div>):<div className="health-clear"><b>✓ No issues detected</b><span>The full platform scan found no current data or operational issues.</span></div>}</div>
+    </Modal>}
+
+    {confirmAction&&<Modal title={confirmAction.title} onClose={()=>setConfirmAction(null)}>
+      <div className="confirm-panel"><div className="confirm-icon">!</div><h3>{confirmAction.title}</h3><p>{confirmAction.message}</p><div className="confirm-actions"><button className="secondary" onClick={()=>setConfirmAction(null)}>Cancel</button><button className={confirmAction.status==="suspended"?"danger-button":"primary"} onClick={async()=>{const a=confirmAction;setConfirmAction(null);if(a.kind==="gym")await updateAccess(selectedGym.id,a.status,owner(selectedGym.id)?.status||"active");else if(a.kind==="owner")await updateAccess(selectedGym.id,selectedGym.platform_status||"active",a.status);else if(a.kind==="password")await manageOwnerPassword("force_change")}}>Confirm</button></div></div>
+    </Modal>}
 
     {selectedGym&&<Modal title={selectedGym.name} onClose={()=>setSelectedGym(null)}>
       <div className="detail-grid">
@@ -186,7 +198,7 @@ function SuperAdminApp({profile}){
       <div className="detail-actions">
         <button className="secondary" onClick={()=>resendWelcomeEmail(selectedGym.id)} disabled={resendBusy}>{resendBusy?"Sending…":"Resend Welcome Email"}</button>
         <button className="secondary" onClick={()=>setPasswordModal({mode:"reset"})}>Reset password</button>
-        <button className="secondary" onClick={()=>{if(window.confirm("Force this Gym Owner to change their password on next login?"))manageOwnerPassword("force_change")}}>Force password change</button>
+        <button className="secondary" onClick={()=>setConfirmAction({kind:"password",title:"Force password change?",message:"The Gym Owner will be required to create a new password at the next login."})}>Force password change</button>
         {owner(selectedGym.id)?.status==="active"?<button className="secondary" onClick={()=>setOwnerStatus("suspended")}>Suspend Owner Access</button>:<button className="secondary" onClick={()=>setOwnerStatus("active")}>Activate Owner Access</button>}
         {(selectedGym.platform_status||"active")==="active"?<button className="danger-button" onClick={()=>setGymStatus("suspended")}>Suspend Gym</button>:<button className="primary" onClick={()=>setGymStatus("active")}>Activate Gym</button>}
       </div>
