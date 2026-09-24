@@ -3,19 +3,20 @@ import { supabase } from "./lib/supabase";
 import { signIn } from "./lib/auth";
 
 const REMEMBER_KEY="gymos_remembered_login_v1";
+async function reportLoginError(message,code="LOGIN_ERROR"){try{await supabase.rpc("record_platform_error",{p_source:"login",p_operation:"sign_in",p_message:String(message||"Login error"),p_error_code:code,p_path:window.location.pathname})}catch{}}
 
 export default function Login({onLogin}){
  const [id,setId]=useState(""),[password,setPassword]=useState(""),[remember,setRemember]=useState(false),[showPassword,setShowPassword]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
  useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");if(saved?.id){setId(saved.id);setRemember(true);if(saved.password){try{localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:saved.id}))}catch{}}}}catch{}},[]);
  async function submit(e){
   e.preventDefault();setError("");
-  if(!supabase){setError("Supabase is not configured yet.");return}
-  if(!id.trim()||!password){setError("Enter your Login ID and password.");return}
+  if(!supabase){const msg="Supabase is not configured yet.";setError(msg);reportLoginError(msg,"CONFIGURATION_ERROR");return}
+  if(!id.trim()||!password){const msg="Enter your Login ID and password.";setError(msg);reportLoginError(msg,"VALIDATION_ERROR");return}
   setBusy(true);
   const cleanId=id.trim();
   const email=cleanId.toLowerCase().includes("@")?cleanId.toLowerCase():cleanId.toLowerCase()+"@gymos.local";
   let data;
-  try{data=await signIn(cleanId,password)}catch(error){setBusy(false);setError(error?.message==="This account is inactive. Contact your Gym Admin."?error.message:"Invalid Login ID or password.");return}
+  try{data=await signIn(cleanId,password)}catch(error){setBusy(false);const msg=error?.message==="This account is inactive. Contact your Gym Admin."?error.message:"Invalid Login ID or password.";setError(msg);reportLoginError(msg,error?.message==="This account is inactive. Contact your Gym Admin."?"ACCOUNT_INACTIVE":"AUTHENTICATION");return}
   if(remember){try{localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:cleanId}))}catch{}}else{try{localStorage.removeItem(REMEMBER_KEY)}catch{}}
   setBusy(false);onLogin(data.user);
  }
