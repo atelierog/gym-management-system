@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   const body=await req.json();
   const userId=String(body.user_id||"");
   const password=String(body.password||"");
-  if(!userId||password.length<8) return Response.json({error:"user_id and a password of at least 8 characters are required"},{status:400,headers:CORS});
+  const passwordMissing=[];if(password.length<8)passwordMissing.push("at least 8 characters");if(!/[A-Z]/.test(password))passwordMissing.push("1 uppercase letter");if(!/[a-z]/.test(password))passwordMissing.push("1 lowercase letter");if(!/[0-9]/.test(password))passwordMissing.push("1 number");if(!/[^A-Za-z0-9]/.test(password))passwordMissing.push("1 special character");if(!userId||passwordMissing.length)return Response.json({error:userId?("Password must contain "+passwordMissing.join(", ")+"."):"user_id and a valid password are required"},{status:400,headers:CORS});
   const {data:target}=await admin.from("profiles").select("id,login_id,full_name,role,gym_id,status").eq("id",userId).eq("gym_id",actorProfile.gym_id).single();
   if(!target||!["member","trainer"].includes(target.role)) return Response.json({error:"Member or trainer not found in this gym"},{status:404,headers:CORS});
   const {error:ue}=await admin.auth.admin.updateUserById(target.id,{password});
