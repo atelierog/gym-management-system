@@ -9,7 +9,7 @@ async function loadGymAccess(profile){
 }
 
 function ensureGymAccess(gym){
- if(gym?.platform_status==="suspended") throw new Error("This gym is currently suspended. Contact Atelier OG.");
+ if(gym?.platform_status==="suspended") throw new Error("This gym has been suspended.");
 }
 
 export async function signIn(loginId,password){
