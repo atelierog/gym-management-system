@@ -1,0 +1,52 @@
+/* Gym Manager — Super Admin platinum transformation */
+:root{
+  --gm-platinum-50:#f8fafc;
+  --gm-platinum-100:#eef1f4;
+  --gm-platinum-200:#dfe4e9;
+  --gm-platinum-300:#c8ced5;
+  --gm-platinum-400:#aeb6c0;
+  --gm-platinum-500:#8d97a3;
+  --gm-platinum-600:#6f7a87;
+  --gm-ink:#111827;
+  --gm-navy:#0b1220;
+}
+/* Keep Super Admin visually consistent with the platinum Gym Manager brand. */
+.platform-app{background:linear-gradient(180deg,#f6f7f9 0%,#eef1f4 100%)!important}
+.platform-sidebar{background:linear-gradient(180deg,#0b1220 0%,#121923 70%,#0b1220 100%)!important;border-right-color:#303844!important}
+.platform-logo{border-bottom-color:#303844!important}
+.platform-logo small{color:#aeb6c0!important}
+.platform-mark,.login-mark{background:linear-gradient(145deg,#ffffff 0%,#dce1e6 42%,#aeb7c1 100%)!important;color:#111827!important;box-shadow:0 7px 22px #0005,0 0 0 1px #ffffff80 inset!important}
+.platform-user{background:#ffffff0d!important}
+.platform-user .avatar{background:#dfe4e9!important;color:#202833!important}
+.platform-sidebar nav button{color:#cbd2da!important}
+.platform-sidebar nav button.active,.platform-sidebar nav button:hover{background:linear-gradient(135deg,#eef1f4,#c9d0d7)!important;color:#111827!important}
+.platform-sidebar .logout{border-top-color:#303844!important;color:#aeb6c0!important}
+.platform-main{color:var(--gm-ink)}
+.platform-header h2{color:#111827!important}
+.eyebrow{color:#7a8592!important}
+.create-button,.primary{background:linear-gradient(135deg,#f5f7f9 0%,#c5ccd3 48%,#eef1f4 100%)!important;color:#111827!important;border:1px solid #b8c0c8!important;box-shadow:0 8px 20px #11182718!important}
+.platform-hero{background:radial-gradient(circle at 85% 18%,#66717d 0,#26303b 38%,#0f1722 100%)!important}
+.hero-kicker{color:#d6dbe0!important}
+.hero-badge{background:#ffffff12!important;border-color:#c8ced533!important;color:#f4f6f8!important}
+.platform-cards .stat:after{background:#e7eaee!important}
+.live-pill{background:#edf0f3!important;color:#46515d!important}
+.live-pill i{background:#8d97a3!important}
+.platform-empty{background:#f8fafb!important;border-color:#cfd5db!important}
+.empty-icon{background:#e7eaee!important;color:#596573!important}
+.notice{background:#f1f3f5!important;color:#374151!important;border-color:#cdd3d9!important}
+
+/* Remove remaining gold accent treatment from the Super Admin surface. */
+.platform-app .platform-header button,
+.platform-app button.primary,
+.platform-app button.create-button{filter:saturate(.15)}
+
+/* Mobile-first Super Admin: calm top bar, no crowded navigation strip. */
+@media(max-width:650px){
+  .platform-sidebar{height:78px!important;min-height:78px!important;padding:10px 14px!important}
+  .platform-logo{gap:9px!important}
+  .platform-mark{width:38px!important;height:38px!important}
+  .platform-sidebar nav{max-width:46vw;overflow-x:auto;scrollbar-width:none}
+  .platform-sidebar nav::-webkit-scrollbar{display:none}
+  .platform-sidebar nav button{padding:9px 11px!important}
+  .platform-main{padding:18px 13px 32px!important}
+}
