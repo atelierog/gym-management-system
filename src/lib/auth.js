@@ -8,16 +8,25 @@ export async function signIn(loginId,password){
  const email=raw.includes("@")?raw:raw+"@gymos.local";
  const {data,error}=await supabase.auth.signInWithPassword({email,password});
  if(error)throw error;
- const {data:platform}=await supabase.from("platform_admins").select("status").eq("id",data.user.id).maybeSingle();
- if(platform?.status==="active") return data;
- const {data:profile,error:pe}=await supabase.from("profiles").select("status").eq("id",data.user.id).single();
- if(pe||profile?.status!=="active"){
+
+ // Fetch the two possible account records together. The previous flow queried
+ // platform_admins, then profiles, and Login queried them again, adding avoidable
+ // round trips before the screen could open.
+ const [{data:platform},{data:profile,error:profileError}]=await Promise.all([
+   supabase.from("platform_admins").select("id,email,full_name,status").eq("id",data.user.id).maybeSingle(),
+   supabase.from("profiles").select("*").eq("id",data.user.id).maybeSingle()
+ ]);
+
+ if(platform?.status==="active") return {...data,platform,profile:null};
+ if(profileError || !profile || profile.status!=="active"){
    await supabase.auth.signOut();
    throw new Error("This account is inactive. Contact your Gym Admin.");
  }
- return data;
+ return {...data,platform:null,profile};
 }
+
 export async function signOut(){if(supabase)await supabase.auth.signOut();}
+
 export async function currentProfile(){
  if(!supabase)return null;
  const {data:{user}}=await supabase.auth.getUser();if(!user)return null;
