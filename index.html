@@ -3,21 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#0b0f17">
   <meta name="description" content="Gym Manager — simple gym management for owners, trainers and members.">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon.svg">
   <title>Gym Manager</title>
+  <style>
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#0b0f17}
+    #boot-splash{position:fixed;inset:0;z-index:99999;overflow:hidden;display:grid;place-items:center;background:#090d14;color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:opacity .65s ease,visibility .65s ease}
+    #boot-splash.is-done{opacity:0;visibility:hidden;pointer-events:none}
+    .boot-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(214,163,53,.13),transparent 28%),radial-gradient(circle at 50% 100%,rgba(214,163,53,.09),transparent 45%),linear-gradient(145deg,#121a28 0%,#090d14 55%,#05070b 100%)}
+    .boot-grid{position:absolute;inset:-20%;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:46px 46px;transform:perspective(700px) rotateX(60deg) translateY(35%);transform-origin:center bottom;animation:boot-grid 5s ease-in-out infinite alternate}
+    .boot-glow{position:absolute;width:72vw;height:72vw;max-width:520px;max-height:520px;border-radius:50%;border:1px solid rgba(224,177,70,.18);box-shadow:0 0 90px rgba(224,177,70,.07),inset 0 0 90px rgba(224,177,70,.04);animation:boot-pulse 2.6s ease-in-out infinite}
+    .boot-ring{position:absolute;width:52vw;height:52vw;max-width:360px;max-height:360px;border-radius:50%;border:1px solid rgba(224,177,70,.32);border-top-color:#f1c75b;animation:boot-spin 5s linear infinite}
+    .boot-content{position:relative;width:min(88vw,430px);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:72px 24px 48px}
+    .boot-logo{position:relative;width:118px;height:118px;border-radius:32px;background:linear-gradient(145deg,#f2c85b,#b98420);padding:2px;box-shadow:0 0 0 1px rgba(255,215,115,.25),0 18px 70px rgba(224,177,70,.2);animation:boot-logo-in .8s cubic-bezier(.2,.8,.2,1) both}
+    .boot-logo:before{content:"";position:absolute;inset:7px;border-radius:26px;background:linear-gradient(145deg,#1b2029,#080b10);box-shadow:inset 0 0 30px rgba(255,255,255,.05)}
+    .boot-gm{position:relative;height:100%;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;letter-spacing:-3px;color:#f4c95c;text-shadow:0 0 22px rgba(244,201,92,.25)}
+    .boot-barbell{position:absolute;top:20px;left:50%;width:30px;height:3px;transform:translateX(-50%);background:#f4c95c;border-radius:5px;box-shadow:-7px 0 0 -1px #f4c95c,7px 0 0 -1px #f4c95c}
+    .boot-barbell:before,.boot-barbell:after{content:"";position:absolute;top:-5px;width:4px;height:13px;border-radius:3px;background:#f4c95c}.boot-barbell:before{left:-4px}.boot-barbell:after{right:-4px}
+    .boot-title{margin-top:28px;font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-1.2px;animation:boot-rise .75s .22s both}.boot-title span{color:#efc653}
+    .boot-tag{margin-top:12px;color:#aeb5c1;font-size:12px;letter-spacing:4px;text-transform:uppercase;animation:boot-rise .75s .36s both}
+    .boot-status{margin-top:56px;width:min(320px,78vw);animation:boot-rise .75s .48s both}.boot-track{height:5px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}.boot-progress{height:100%;width:12%;border-radius:inherit;background:linear-gradient(90deg,#b98420,#ffe17c);box-shadow:0 0 14px rgba(244,201,92,.55);animation:boot-progress 1.8s cubic-bezier(.4,0,.2,1) forwards}.boot-loading{margin-top:14px;color:#747d8d;font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .boot-dots{display:flex;gap:6px;margin-top:20px}.boot-dots i{width:5px;height:5px;border-radius:50%;background:#555f70;animation:boot-dot 1.2s infinite}.boot-dots i:nth-child(2){animation-delay:.15s}.boot-dots i:nth-child(3){animation-delay:.3s}
+    .boot-credit{position:absolute;bottom:30px;color:#596272;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+    @keyframes boot-logo-in{from{opacity:0;transform:scale(.72) rotate(-8deg);filter:blur(8px)}to{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}}
+    @keyframes boot-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes boot-progress{0%{width:12%}45%{width:48%}78%{width:76%}100%{width:94%}}
+    @keyframes boot-spin{to{transform:rotate(360deg)}}
+    @keyframes boot-pulse{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.04);opacity:1}}
+    @keyframes boot-grid{from{transform:perspective(700px) rotateX(60deg) translateY(35%) translateX(-2%)}to{transform:perspective(700px) rotateX(60deg) translateY(30%) translateX(2%)}}
+    @keyframes boot-dot{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+    @media(prefers-reduced-motion:reduce){.boot-grid,.boot-glow,.boot-ring,.boot-logo,.boot-title,.boot-tag,.boot-status,.boot-dots i{animation:none}.boot-progress{width:94%}}
+  </style>
 </head>
 <body>
-  <div id="root">
-    <div id="boot-fallback" style="min-height:100vh;display:grid;place-items:center;font-family:system-ui,Arial;background:#111827;color:#fff;padding:24px;text-align:center">
-      <div><h1 style="margin:0 0 8px">Gym Manager</h1><p style="margin:0;color:#d1d5db">Starting…</p></div>
+  <div id="boot-splash" aria-label="Loading Gym Manager">
+    <div class="boot-bg"></div><div class="boot-grid"></div><div class="boot-glow"></div><div class="boot-ring"></div>
+    <div class="boot-content">
+      <div class="boot-logo" aria-hidden="true"><div class="boot-barbell"></div><div class="boot-gm">GM</div></div>
+      <div class="boot-title">Gym <span>Manager</span></div>
+      <div class="boot-tag">Manage · Grow · Together</div>
+      <div class="boot-status"><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-loading">Preparing your gym manager</div><div class="boot-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>
+      <div class="boot-credit">Powered by Atelier OG</div>
     </div>
   </div>
+  <div id="root"></div>
   <script>
-    window.addEventListener("error",function(e){var r=document.getElementById("boot-fallback");if(r)r.innerHTML="<div><h1>Gym Manager</h1><p>Something went wrong while starting the app.</p><small>"+String(e.error?.message||e.message||"Unknown startup error").replace(/[<>]/g,"")+"</small></div>"});
-    window.addEventListener("unhandledrejection",function(e){var r=document.getElementById("boot-fallback");if(r)r.innerHTML="<div><h1>Gym Manager</h1><p>Something went wrong while starting the app.</p><small>"+String(e.reason?.message||e.reason||"Unknown startup error").replace(/[<>]/g,"")+"</small></div>"});
+    (function(){
+      var splash=document.getElementById('boot-splash'),root=document.getElementById('root');
+      var started=Date.now(),hidden=false;
+      function finish(){if(hidden)return;hidden=true;splash.classList.add('is-done');setTimeout(function(){if(splash.parentNode)splash.remove()},700)}
+      var observer=new MutationObserver(function(){if(root.children.length && Date.now()-started>850)setTimeout(finish,350)});observer.observe(root,{childList:true});
+      setTimeout(function(){if(root.children.length)finish();},2400);
+      window.addEventListener('error',function(e){if(root.children.length)finish();});
+      window.addEventListener('unhandledrejection',function(){if(root.children.length)finish();});
+    })();
   </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
