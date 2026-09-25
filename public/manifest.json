@@ -1,14 +1,15 @@
 {
   "name": "Gym Manager",
   "short_name": "Gym Manager",
-  "start_url": "/",
+  "start_url": "/Gym-Manager/",
+  "scope": "/Gym-Manager/",
   "display": "standalone",
   "background_color": "#070a0f",
   "theme_color": "#070a0f",
   "description": "Simple gym management for owners, trainers and members.",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/Gym-Manager/icon.svg?v=3",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
