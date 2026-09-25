@@ -1,4 +1,4 @@
-name: Build and Deploy GymOS
+name: Build and Deploy Gym Manager
 
 on:
   push:
