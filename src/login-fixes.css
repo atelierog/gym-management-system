@@ -1,0 +1,9 @@
+.gm-password-wrap{position:relative!important;display:block!important;width:100%!important;height:50px!important;min-height:50px!important}
+.gm-password-wrap>.gm-password-toggle{position:absolute!important;z-index:3!important;right:6px!important;top:0!important;bottom:0!important;transform:none!important;width:38px!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:9px!important;background:transparent!important;display:grid!important;place-items:center!important;align-items:center!important;justify-content:center!important;line-height:0!important;flex:none!important}
+.gm-password-wrap>.gm-password-toggle svg{display:block!important;width:21px!important;height:21px!important;margin:0!important;flex:none!important}
+.gm-password-wrap>input{position:absolute!important;inset:0!important;width:100%!important;height:50px!important;margin:0!important}
+.gm-signin{position:relative;display:flex!important;align-items:center;justify-content:center;gap:9px;min-height:49px!important;background:linear-gradient(135deg,#f4f6f8,#aeb6bf)!important;color:#10141a!important}
+.gm-signin:disabled{opacity:1!important;filter:none!important;background:linear-gradient(135deg,#e8edf2,#aeb7c0)!important;color:#161b21!important}
+.gm-signin-spinner{width:15px;height:15px;border:2px solid rgba(16,20,26,.28);border-top-color:#10141a;border-radius:50%;animation:gmSignSpin .65s linear infinite;flex:none}
+@keyframes gmSignSpin{to{transform:rotate(360deg)}}
+@media(max-width:650px){.gm-password-wrap{height:45px!important;min-height:45px!important}.gm-password-wrap>input{height:45px!important}.gm-password-wrap>.gm-password-toggle{width:34px!important}.gm-password-wrap>.gm-password-toggle svg{width:19px!important;height:19px!important}.gm-signin{min-height:46px!important}}
