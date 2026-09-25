@@ -42,6 +42,14 @@
     }catch{}
     return '';
   }
+  async function rest(path){
+    const token=sessionToken();
+    if(!token) throw new Error('Your Super Admin session has expired. Please sign in again.');
+    const response=await fetch(PROJECT_URL+'/rest/v1/'+path,{headers:{apikey:PUBLISHABLE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'}});
+    const text=await response.text(); let data=null; try{data=text?JSON.parse(text):null}catch{}
+    if(!response.ok) throw new Error(data?.message||data?.hint||data?.error||text||'Request failed');
+    return data;
+  }
   async function edge(name,body){
     const token=sessionToken();
     if(!token) throw new Error('Your Super Admin session has expired. Please sign in again.');
@@ -90,8 +98,8 @@
   }
   function extractOwnerIdentifiers(modal){
     const text=(modal?.textContent||'').replace(/\s+/g,' ').trim();
-    const loginMatch=text.match(/LOGIN ID\s*[:\-]?\s*([A-Z0-9_-]{3,})/i);
-    const emailMatch=text.match(/OWNER EMAIL\s*[:\-]?\s*([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i);
+    const loginMatch=text.match(/LOGIN\s*ID\s*[:\-]?\s*([A-Z0-9_-]{3,})/i);
+    const emailMatch=text.match(/OWNER\s*EMAIL\s*[:\-]?\s*([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i);
     const title=(modal?.querySelector('.modal-head h3')?.textContent||'').trim();
     return {loginId:loginMatch?.[1]||'',ownerEmail:emailMatch?.[1]||'',gymName:title};
   }
@@ -119,30 +127,36 @@
   async function suspendGym(modal){
     const ids=extractOwnerIdentifiers(modal);
     if(!ids.loginId && !ids.ownerEmail && !ids.gymName) throw new Error('Could not identify this gym. Close and reopen the gym profile, then try again.');
-    showActionConfirm({
-      title:'Suspend gym?',gymName:ids.gymName,
-      description:'This will immediately block the Gym Owner from accessing Gym Manager. Existing gym data will remain preserved and can be restored by the Super Admin.',
-      confirmLabel:'Suspend Gym',
-      onConfirm:async()=>{
-        const result=await edge('super-admin-suspend-gym',{...ids,action:'suspend'});
-        if(!result?.ok) throw new Error(result?.error||'Gym could not be suspended.');
-        closeModal(modal); showToast('Gym suspended successfully.'); setTimeout(()=>location.reload(),700);
-      }
-    });
+    showActionConfirm({title:'Suspend gym?',gymName:ids.gymName,description:'This will immediately block the Gym Owner from accessing Gym Manager. Existing gym data will remain preserved and can be restored by the Super Admin.',confirmLabel:'Suspend Gym',onConfirm:async()=>{
+      const result=await edge('super-admin-suspend-gym',{...ids,action:'suspend'});
+      if(!result?.ok) throw new Error(result?.error||'Gym could not be suspended.');
+      closeModal(modal); showToast('Gym suspended successfully.'); setTimeout(()=>location.reload(),700);
+    }});
+  }
+  async function resolveGymId(ids){
+    if(ids.loginId){
+      const rows=await rest('profiles?select=gym_id&login_id=eq.'+encodeURIComponent(ids.loginId)+'&role=eq.admin&limit=1');
+      if(rows?.[0]?.gym_id) return rows[0].gym_id;
+    }
+    if(ids.ownerEmail){
+      const rows=await rest('profiles?select=gym_id&email=eq.'+encodeURIComponent(ids.ownerEmail)+'&role=eq.admin&limit=1');
+      if(rows?.[0]?.gym_id) return rows[0].gym_id;
+    }
+    if(ids.gymName){
+      const rows=await rest('gyms?select=id&name=eq.'+encodeURIComponent(ids.gymName)+'&limit=1');
+      if(rows?.[0]?.id) return rows[0].id;
+    }
+    throw new Error('Could not identify this gym. Close and reopen the gym profile, then try again.');
   }
   async function deleteGym(modal){
     const ids=extractOwnerIdentifiers(modal);
     if(!ids.loginId && !ids.ownerEmail && !ids.gymName) throw new Error('Could not identify this gym. Close and reopen the gym profile, then try again.');
-    showActionConfirm({
-      title:'Delete gym permanently?',gymName:ids.gymName,
-      description:'This permanently removes the gym, owner account, members, trainers, memberships, payments, attendance and related gym data. This cannot be undone.',
-      confirmLabel:'Delete Gym & All Data',
-      onConfirm:async()=>{
-        const result=await edge('super-admin-delete-gym',ids);
-        if(!result?.ok) throw new Error(result?.error||'Gym could not be deleted.');
-        closeModal(modal); showToast('Gym deleted successfully.'); setTimeout(()=>location.reload(),700);
-      }
-    });
+    showActionConfirm({title:'Delete gym permanently?',gymName:ids.gymName,description:'This permanently removes the gym, owner account, members, trainers, memberships, payments, attendance and related gym data. This cannot be undone.',confirmLabel:'Delete Gym & All Data',onConfirm:async()=>{
+      const gymId=await resolveGymId(ids);
+      const result=await edge('super-admin-delete-gym',{gym_id:gymId});
+      if(!result?.ok) throw new Error(result?.error||'Gym could not be deleted.');
+      closeModal(modal); showToast('Gym deleted successfully.'); setTimeout(()=>location.reload(),700);
+    }});
   }
   function hideCredentialModal(){
     document.querySelectorAll('.modal').forEach(modal=>{
@@ -160,8 +174,7 @@
   function addDeleteAction(){
     document.querySelectorAll('.modal').forEach(modal=>{
       if(modal.dataset.gmDeleteAdded==='1') return;
-      const text=modal.textContent||'';
-      const title=(modal.querySelector('.modal-head h3')?.textContent||'').trim();
+      const text=modal.textContent||''; const title=(modal.querySelector('.modal-head h3')?.textContent||'').trim();
       if(!title || !/Gym status/i.test(text) || !/Owner Access/i.test(text)) return;
       const body=modal.querySelector('.modal-body'); if(!body) return;
       const button=document.createElement('button'); button.type='button'; button.className='danger-button wide'; button.textContent='Delete Gym & All Data'; button.style.marginTop='12px';
@@ -187,10 +200,7 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
   const observer=new MutationObserver(mutations=>{
-    for(const mutation of mutations){
-      if(mutation.type==='characterData') normalizeText(mutation.target);
-      mutation.addedNodes.forEach(normalizeText);
-    }
+    for(const mutation of mutations){if(mutation.type==='characterData') normalizeText(mutation.target); mutation.addedNodes.forEach(normalizeText);}
     hideCredentialModal(); addDeleteAction();
   });
   observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
