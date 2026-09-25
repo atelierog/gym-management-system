@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070a0f">
   <meta name="description" content="Gym Manager — simple gym management for owners, trainers and members.">
   <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="./icon.svg?v=3" type="image/svg+xml">
+  <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml">
   <title>Gym Manager</title>
   <style>
     :root{color-scheme:dark}
@@ -47,7 +47,7 @@
     <div class="boot-scene"></div><div class="boot-ceiling"></div><div class="boot-light"></div><div class="boot-arc"></div><div class="boot-floor"></div>
     <div class="boot-equipment"><div class="rack"></div><div class="bench"></div></div>
     <div class="boot-content">
-      <img class="boot-logo" src="./icon.svg?v=3" alt="Gym Manager">
+      <img class="boot-logo" src="./icon.svg?v=4" alt="Gym Manager">
       <div class="boot-title">Gym <span>Manager</span></div><div class="boot-tag">Manage · Grow · Together</div>
       <div class="boot-status"><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-loading">Loading your gym manager</div><div class="boot-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>
       <div class="boot-credit">Powered by Atelier OG</div>
@@ -57,6 +57,6 @@
   <script>
     (function(){var splash=document.getElementById('boot-splash'),root=document.getElementById('root'),started=Date.now(),hidden=false,minimum=2800;function finish(){if(hidden)return;hidden=true;var wait=Math.max(0,minimum-(Date.now()-started));setTimeout(function(){splash.classList.add('is-done');setTimeout(function(){if(splash.parentNode)splash.remove()},1100)},wait)}var observer=new MutationObserver(function(){if(root.children.length)finish()});observer.observe(root,{childList:true});setTimeout(function(){finish()},4300);window.addEventListener('error',function(){if(root.children.length)finish()});window.addEventListener('unhandledrejection',function(){if(root.children.length)finish()})})();
   </script>
-  <script type="module" src="/src/main.jsx"></script>
+  <script type="module" src="./src/main.jsx"></script>
 </body>
 </html>
