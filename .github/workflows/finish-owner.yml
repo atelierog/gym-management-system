@@ -1,0 +1,40 @@
+name: Finish Owner Portal Cleanup
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    if: "!contains(github.event.head_commit.message, '[owner-cleanup]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply cleanup and rebuild
+        run: python scripts/finish_owner_portal.py
+      - name: Install dependencies
+        run: npm install
+      - name: Build application
+        env:
+          VITE_SUPABASE_URL: https://kwzdxqhzhnmrjfyhgzxa.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_57Izo4d8N0fAYzt6jYA_EQ_TkoDHPty
+        run: npm run build
+      - name: Remove one-shot tooling
+        run: |
+          rm -f scripts/finish_owner_portal.py .github/workflows/finish-owner.yml
+      - name: Commit final owner portal
+        run: |
+          git config user.name "Atelier OG Bot"
+          git config user.email "atelierog.co.in@users.noreply.github.com"
+          git add src/main.jsx src/app.css src/owner.css scripts/finish_owner_portal.py .github/workflows/finish-owner.yml
+          git commit -m "Finish Gym Manager Owner portal [owner-cleanup]"
+          git push
