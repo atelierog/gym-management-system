@@ -1,24 +1,24 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import postgres from "npm:postgres@3.4.7";
 
 const CORS={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST,OPTIONS"};
 const APP_BASE_URL="https://atelierog.co.in/gym-manager";
 const esc=(v:string)=>String(v??"").replace(/[&<>\"]/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]||m));
 const slugify=(v:string)=>String(v||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||"gym";
 
-async function getResendKey(){
+async function getResendKey(admin:any){
   const direct=Deno.env.get("RESEND_API_KEY");
   if(direct) return direct;
-  const dbUrl=Deno.env.get("SUPABASE_DB_URL");
-  if(!dbUrl) return "";
-  const sql=postgres(dbUrl,{max:1,prepare:false});
-  try{const rows=await sql`select decrypted_secret from vault.decrypted_secrets where name='gymos_resend_api_key' limit 1`;return String(rows[0]?.decrypted_secret||"")}catch{return ""}finally{await sql.end({timeout:2}).catch(()=>{})}
+  try{
+    const {data,error}=await admin.rpc("get_gym_manager_resend_key");
+    if(!error && data) return String(data);
+  }catch{}
+  return "";
 }
 
-async function sendOwnerWelcomeEmail(args:{gymId:string,gymSlug:string,gymName:string,ownerName:string,ownerEmail:string,ownerPhone:string,loginId:string,password:string}){
-  const key=await getResendKey();
-  if(!key) return {sent:false,reason:"RESEND_API_KEY is not configured in Supabase."};
+async function sendOwnerWelcomeEmail(admin:any,args:{gymId:string,gymSlug:string,gymName:string,ownerName:string,ownerEmail:string,ownerPhone:string,loginId:string,password:string}){
+  const key=await getResendKey(admin);
+  if(!key) return {sent:false,reason:"Resend credential is not configured."};
   const from=Deno.env.get("GYMOS_FROM_EMAIL")||"Atelier OG Gym Manager <noreply@atelierog.co.in>";
   const roleUrl=`${APP_BASE_URL}/${args.gymSlug}/owner`;
   const subject=`Welcome to Gym Manager — ${args.gymName}`;
@@ -46,6 +46,6 @@ Deno.serve(async(req)=>{
   const{data:gym,error:ge}=await admin.from("gyms").insert({name,slug:gymSlug}).select().single();if(ge)return Response.json({error:ge.message},{status:400,headers:CORS});
   const authEmail=loginId.toLowerCase()+"@gymos.local";const{data:newUser,error:ue}=await admin.auth.admin.createUser({email:authEmail,password,email_confirm:true});if(ue){await admin.from("gyms").delete().eq("id",gym.id);return Response.json({error:ue.message},{status:400,headers:CORS})}
   const{data:profile,error:pe}=await admin.from("profiles").insert({id:newUser.user.id,gym_id:gym.id,login_id:loginId,full_name:ownerName,role:"admin",status:"active",phone:ownerPhone||null,email:ownerEmail,password_change_required:true,password_reset_at:new Date().toISOString()}).select().single();if(pe){await admin.auth.admin.deleteUser(newUser.user.id);await admin.from("gyms").delete().eq("id",gym.id);return Response.json({error:pe.message},{status:400,headers:CORS})}
-  const emailResult=await sendOwnerWelcomeEmail({gymId:gym.id,gymSlug:gym.slug,gymName:name,ownerName,ownerEmail,ownerPhone,loginId,password});
+  const emailResult=await sendOwnerWelcomeEmail(admin,{gymId:gym.id,gymSlug:gym.slug,gymName:name,ownerName,ownerEmail,ownerPhone,loginId,password});
   return Response.json({gym,owner:profile,temporary_password:password,password_change_required:true,role_login_url:`${APP_BASE_URL}/${gym.slug}/owner`,email_sent:emailResult.sent,email_status:emailResult.sent?"Welcome email sent to the gym owner.":emailResult.reason||"Welcome email could not be sent."},{headers:{...CORS,"Content-Type":"application/json"}});
 });
