@@ -1,4 +1,4 @@
-/* Gym Manager brand normalization + small production hotfixes. */
+/* Gym Manager brand normalization + production Super Admin fixes. */
 (function(){
   const replacements = [
     [/GYMOS Platform/g, 'Gym Manager'],
@@ -17,6 +17,7 @@
     return out;
   }
   function normalizeText(node){
+    if(!node) return;
     if(node.nodeType===Node.TEXT_NODE){
       const next=normalize(node.nodeValue);
       if(next!==node.nodeValue) node.nodeValue=next;
@@ -34,98 +35,155 @@
     try{
       for(const key of Object.keys(sessionStorage)){
         if(!key.startsWith('sb-')) continue;
-        const raw=sessionStorage.getItem(key);if(!raw)continue;
+        const raw=sessionStorage.getItem(key); if(!raw) continue;
         const value=JSON.parse(raw);
         if(value?.access_token) return value.access_token;
       }
     }catch{}
     return '';
   }
-
-  async function rest(path,options={}){
-    const token=sessionToken();
-    if(!token) throw new Error('Your Super Admin session has expired. Please sign in again.');
-    const headers={apikey:PUBLISHABLE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',...(options.headers||{})};
-    const response=await fetch(PROJECT_URL+'/rest/v1/'+path,{...options,headers});
-    const text=await response.text();
-    let data=null;try{data=text?JSON.parse(text):null}catch{}
-    if(!response.ok) throw new Error(data?.message||data?.hint||data?.error||text||'Request failed');
-    return data;
-  }
-
   async function edge(name,body){
     const token=sessionToken();
     if(!token) throw new Error('Your Super Admin session has expired. Please sign in again.');
     const response=await fetch(PROJECT_URL+'/functions/v1/'+name,{method:'POST',headers:{apikey:PUBLISHABLE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
     const text=await response.text();
-    let data=null;try{data=text?JSON.parse(text):null}catch{}
+    let data=null; try{data=text?JSON.parse(text):null}catch{}
     if(!response.ok) throw new Error(data?.error||data?.message||text||'Request failed');
     return data;
   }
 
+  function injectPlatinumStyles(){
+    if(document.getElementById('gm-platinum-hotfix')) return;
+    const style=document.createElement('style'); style.id='gm-platinum-hotfix';
+    style.textContent=`
+      .gm-action-overlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:18px!important;background:rgba(6,10,18,.62)!important;backdrop-filter:blur(7px)!important}
+      .gm-action-card{width:min(520px,100%);border:1px solid #d9dee7;border-radius:24px;background:#fff;box-shadow:0 28px 90px rgba(8,14,26,.35);overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .gm-action-head{padding:24px 24px 20px;background:linear-gradient(145deg,#0a1020,#182236);color:#fff;border-bottom:3px solid #d6dbe3}
+      .gm-action-kicker{font-size:11px;letter-spacing:2px;font-weight:800;color:#cbd2dc;text-transform:uppercase}
+      .gm-action-title{margin:7px 0 0;font-size:24px;line-height:1.15;font-weight:800}
+      .gm-action-body{padding:24px;color:#172033}
+      .gm-action-body p{margin:0;color:#697386;line-height:1.55;font-size:15px}
+      .gm-action-gym{margin:0 0 14px;padding:15px 16px;border:1px solid #e1e5eb;border-radius:14px;background:#f8f9fb;font-weight:800;font-size:17px}
+      .gm-action-note{margin-top:14px!important;font-size:12px!important;color:#8a94a5!important}
+      .gm-action-actions{display:flex;gap:10px;margin-top:22px}
+      .gm-action-actions button{flex:1;min-height:48px;border-radius:12px;border:1px solid #d7dce4;font-weight:800;font-size:15px;cursor:pointer}
+      .gm-action-cancel{background:#f3f5f8;color:#172033}
+      .gm-action-danger{background:#8f173f;color:#fff;border-color:#8f173f!important}
+      .gm-action-primary{background:#10192b;color:#fff;border-color:#10192b!important}
+      .gm-action-actions button:disabled{opacity:.55;cursor:wait}
+      .gm-success-mail{padding:15px 16px;border-radius:14px;background:#f7f8fa;border:1px solid #dfe3e8;color:#273247;font-size:14px;line-height:1.55}
+      .gm-success-mail b{color:#10192b}
+      .gm-toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:2147483647;background:#10192b;color:#fff;border:1px solid #d6dbe3;border-radius:14px;padding:13px 18px;box-shadow:0 14px 40px rgba(8,14,26,.28);font-weight:750;font-size:14px;max-width:calc(100vw - 32px);text-align:center}
+      .danger-button.wide{border-radius:12px!important;border:1px solid #d9b5c2!important;background:#fff4f7!important;color:#8f173f!important;font-weight:800!important;min-height:46px!important}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function showToast(message){
+    document.querySelectorAll('.gm-toast').forEach(x=>x.remove());
+    const t=document.createElement('div'); t.className='gm-toast'; t.textContent=message; document.body.appendChild(t);
+    setTimeout(()=>t.remove(),2600);
+  }
+  function closeModal(modal){
+    const close=modal?.querySelector('.modal-head button');
+    if(close) close.click();
+  }
+  function extractOwnerIdentifiers(modal){
+    const text=(modal?.textContent||'').replace(/\s+/g,' ').trim();
+    const loginMatch=text.match(/LOGIN ID\s*[:\-]?\s*([A-Z0-9_-]{3,})/i);
+    const emailMatch=text.match(/OWNER EMAIL\s*[:\-]?\s*([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i);
+    const title=(modal?.querySelector('.modal-head h3')?.textContent||'').trim();
+    return {loginId:loginMatch?.[1]||'',ownerEmail:emailMatch?.[1]||'',gymName:title};
+  }
+  function showActionConfirm({title,gymName,description,danger=true,confirmLabel,onConfirm}){
+    document.querySelectorAll('.gm-action-overlay').forEach(x=>x.remove());
+    const overlay=document.createElement('div'); overlay.className='gm-action-overlay';
+    const card=document.createElement('section'); card.className='gm-action-card';
+    const head=document.createElement('div'); head.className='gm-action-head';
+    head.innerHTML='<div class="gm-action-kicker">PLATFORM CONTROL</div><div class="gm-action-title"></div>';
+    head.querySelector('.gm-action-title').textContent=title;
+    const body=document.createElement('div'); body.className='gm-action-body';
+    const gym=document.createElement('div'); gym.className='gm-action-gym'; gym.textContent=gymName||'Selected gym'; body.appendChild(gym);
+    const p=document.createElement('p'); p.textContent=description; body.appendChild(p);
+    const note=document.createElement('p'); note.className='gm-action-note'; note.textContent='This action is applied at the platform level and takes effect for the Gym Owner account.'; body.appendChild(note);
+    const actions=document.createElement('div'); actions.className='gm-action-actions';
+    const cancel=document.createElement('button'); cancel.className='gm-action-cancel'; cancel.textContent='Cancel';
+    const confirm=document.createElement('button'); confirm.className=danger?'gm-action-danger':'gm-action-primary'; confirm.textContent=confirmLabel;
+    actions.append(cancel,confirm); body.appendChild(actions); card.append(head,body); overlay.appendChild(card); document.body.appendChild(overlay);
+    cancel.addEventListener('click',()=>overlay.remove());
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
+    confirm.addEventListener('click',async()=>{
+      confirm.disabled=true; cancel.disabled=true; confirm.textContent='Working…';
+      try{await onConfirm();overlay.remove()}catch(error){confirm.disabled=false;cancel.disabled=false;confirm.textContent=confirmLabel;showToast(error?.message||'Action could not be completed.')}});
+  }
+  async function suspendGym(modal){
+    const ids=extractOwnerIdentifiers(modal);
+    if(!ids.loginId && !ids.ownerEmail && !ids.gymName) throw new Error('Could not identify this gym. Close and reopen the gym profile, then try again.');
+    showActionConfirm({
+      title:'Suspend gym?',gymName:ids.gymName,
+      description:'This will immediately block the Gym Owner from accessing Gym Manager. Existing gym data will remain preserved and can be restored by the Super Admin.',
+      confirmLabel:'Suspend Gym',
+      onConfirm:async()=>{
+        const result=await edge('super-admin-suspend-gym',{...ids,action:'suspend'});
+        if(!result?.ok) throw new Error(result?.error||'Gym could not be suspended.');
+        closeModal(modal); showToast('Gym suspended successfully.'); setTimeout(()=>location.reload(),700);
+      }
+    });
+  }
+  async function deleteGym(modal){
+    const ids=extractOwnerIdentifiers(modal);
+    if(!ids.loginId && !ids.ownerEmail && !ids.gymName) throw new Error('Could not identify this gym. Close and reopen the gym profile, then try again.');
+    showActionConfirm({
+      title:'Delete gym permanently?',gymName:ids.gymName,
+      description:'This permanently removes the gym, owner account, members, trainers, memberships, payments, attendance and related gym data. This cannot be undone.',
+      confirmLabel:'Delete Gym & All Data',
+      onConfirm:async()=>{
+        const result=await edge('super-admin-delete-gym',ids);
+        if(!result?.ok) throw new Error(result?.error||'Gym could not be deleted.');
+        closeModal(modal); showToast('Gym deleted successfully.'); setTimeout(()=>location.reload(),700);
+      }
+    });
+  }
   function hideCredentialModal(){
     document.querySelectorAll('.modal').forEach(modal=>{
       if(modal.dataset.gmCredentialHidden==='1') return;
       const title=(modal.querySelector('.modal-head h3')?.textContent||'').trim().toLowerCase();
       if(!title.includes('credentials')) return;
-      const body=modal.querySelector('.modal-body');if(!body)return;
-      modal.dataset.gmCredentialHidden='1';
-      body.innerHTML='';
-      const wrap=document.createElement('div');wrap.className='credential-box';
-      wrap.innerHTML='<h3 style="margin:0 0 10px">Credentials sent securely</h3><p style="margin:0 0 14px;color:#667085">The temporary password is no longer displayed here. It is intended to be delivered to the Gym Owner by email.</p><p style="margin:0 0 18px;color:#667085">If the owner does not receive the email, use <b>Resend Welcome Email</b> from the gym profile.</p><button type="button" class="secondary wide" data-gm-close>Done</button>';
+      const body=modal.querySelector('.modal-body'); if(!body) return;
+      modal.dataset.gmCredentialHidden='1'; body.innerHTML='';
+      const wrap=document.createElement('div'); wrap.className='credential-box';
+      wrap.innerHTML='<div class="gm-success-mail"><b>Gym created successfully.</b><br>The Gym Owner welcome email has been sent automatically. No manual resend is required.<br><br>The email contains the Gym Owner login ID, temporary password, secure login link and first-login instructions.</div><button type="button" class="secondary wide" data-gm-close>Done</button>';
       body.appendChild(wrap);
-      wrap.querySelector('[data-gm-close]')?.addEventListener('click',()=>modal.querySelector('.modal-head button')?.click());
+      const close=wrap.querySelector('[data-gm-close]'); if(close) close.addEventListener('click',()=>closeModal(modal));
     });
   }
-
-  function extractOwnerLogin(modal){
-    const text=modal.textContent||'';
-    const match=text.match(/LOGIN ID\s*([A-Z0-9_-]{3,})/i);
-    return match?.[1]||null;
-  }
-
-  async function resolveGymId(modal){
-    const loginId=extractOwnerLogin(modal);
-    if(!loginId) throw new Error('Could not identify the Gym Owner account. Close and reopen the gym profile, then try again.');
-    const rows=await rest('profiles?select=gym_id,login_id&login_id=eq.'+encodeURIComponent(loginId)+'&role=eq.admin&limit=1');
-    if(!rows?.[0]?.gym_id) throw new Error('Could not identify this gym.');
-    return rows[0].gym_id;
-  }
-
   function addDeleteAction(){
     document.querySelectorAll('.modal').forEach(modal=>{
       if(modal.dataset.gmDeleteAdded==='1') return;
       const text=modal.textContent||'';
       const title=(modal.querySelector('.modal-head h3')?.textContent||'').trim();
       if(!title || !/Gym status/i.test(text) || !/Owner Access/i.test(text)) return;
-      const body=modal.querySelector('.modal-body');if(!body)return;
-      const button=document.createElement('button');
-      button.type='button';button.className='danger-button wide';button.textContent='Delete Gym & All Data';
-      button.style.marginTop='12px';
-      button.addEventListener('click',async()=>{
-        if(!confirm('Delete '+title+' permanently? This removes the gym, owner, members, trainers, memberships, payments, attendance and related gym data. This cannot be undone.')) return;
-        button.disabled=true;button.textContent='Deleting…';
-        try{
-          const gymId=await resolveGymId(modal);
-          const result=await edge('super-admin-delete-gym',{gym_id:gymId});
-          if(!result?.ok) throw new Error(result?.error||'Gym could not be deleted.');
-          alert('Gym deleted successfully.');
-          location.reload();
-        }catch(error){
-          alert(error?.message||'Gym could not be deleted.');
-          button.disabled=false;button.textContent='Delete Gym & All Data';
-        }
-      });
-      body.appendChild(button);
-      modal.dataset.gmDeleteAdded='1';
+      const body=modal.querySelector('.modal-body'); if(!body) return;
+      const button=document.createElement('button'); button.type='button'; button.className='danger-button wide'; button.textContent='Delete Gym & All Data'; button.style.marginTop='12px';
+      body.appendChild(button); modal.dataset.gmDeleteAdded='1';
+      button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();deleteGym(modal)});
     });
   }
-
+  function interceptSuspendClicks(){
+    if(document.documentElement.dataset.gmSuspendCapture==='1') return;
+    document.documentElement.dataset.gmSuspendCapture='1';
+    document.addEventListener('click',e=>{
+      const button=e.target?.closest?.('button'); if(!button) return;
+      const label=(button.textContent||'').replace(/\s+/g,' ').trim();
+      if(label!=='Suspend Gym') return;
+      const modal=button.closest('.modal'); if(!modal) return;
+      e.preventDefault(); e.stopImmediatePropagation(); suspendGym(modal);
+    },true);
+  }
   function run(){
-    normalizeText(document.body);
-    if(document.title)document.title=normalize(document.title);
-    hideCredentialModal();
-    addDeleteAction();
+    injectPlatinumStyles(); normalizeText(document.body);
+    if(document.title) document.title=normalize(document.title);
+    hideCredentialModal(); addDeleteAction(); interceptSuspendClicks();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
   const observer=new MutationObserver(mutations=>{
@@ -133,8 +191,7 @@
       if(mutation.type==='characterData') normalizeText(mutation.target);
       mutation.addedNodes.forEach(normalizeText);
     }
-    hideCredentialModal();
-    addDeleteAction();
+    hideCredentialModal(); addDeleteAction();
   });
   observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
 })();
