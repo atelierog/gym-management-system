@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Apply redesign
-        run: python scripts/redesign_owner_portal.py
+        run: python scripts/apply_owner_v2.py
       - name: Validate build
         run: |
           npm install
