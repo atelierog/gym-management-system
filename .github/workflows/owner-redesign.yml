@@ -1,0 +1,30 @@
+name: Apply Gym Manager Owner Redesign
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  redesign:
+    if: "!contains(github.event.head_commit.message, '[owner-redesign]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply redesign
+        run: python scripts/redesign_owner_portal.py
+      - name: Validate build
+        run: |
+          npm install
+          npm run build
+      - name: Commit redesign
+        run: |
+          git config user.name "Atelier OG Bot"
+          git config user.email "atelierog.co.in@users.noreply.github.com"
+          git add src/main.jsx src/app.css
+          git diff --cached --quiet && exit 0
+          git commit -m "Redesign Gym Manager Owner portal [owner-redesign]"
+          git push
