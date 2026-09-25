@@ -9,7 +9,7 @@
   "description": "Simple gym management for owners, trainers and members.",
   "icons": [
     {
-      "src": "/Gym-Manager/icon.svg?v=3",
+      "src": "/Gym-Manager/icon.svg?v=6",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
