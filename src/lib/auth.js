@@ -2,6 +2,16 @@ import { supabase } from "./supabase";
 
 const SUPER_ADMIN_EMAIL="atelierog.co@gmail.com";
 
+async function loadGymAccess(profile){
+ if(!profile?.gym_id) return null;
+ const {data:gym}=await supabase.from("gyms").select("id,slug,platform_status").eq("id",profile.gym_id).maybeSingle();
+ return gym||null;
+}
+
+function ensureGymAccess(gym){
+ if(gym?.platform_status==="suspended") throw new Error("This gym is currently suspended. Contact Atelier OG.");
+}
+
 export async function signIn(loginId,password){
  if(!supabase) throw new Error("Supabase is not configured.");
  const raw=loginId.trim().toLowerCase();
@@ -9,9 +19,7 @@ export async function signIn(loginId,password){
  const {data,error}=await supabase.auth.signInWithPassword({email,password});
  if(error)throw error;
 
- // Fetch the two possible account records together. The previous flow queried
- // platform_admins, then profiles, and Login queried them again, adding avoidable
- // round trips before the screen could open.
+ // Fetch account records together to keep login fast.
  const [{data:platform},{data:profile,error:profileError}]=await Promise.all([
    supabase.from("platform_admins").select("id,email,full_name,status").eq("id",data.user.id).maybeSingle(),
    supabase.from("profiles").select("*").eq("id",data.user.id).maybeSingle()
@@ -22,11 +30,12 @@ export async function signIn(loginId,password){
    await supabase.auth.signOut();
    throw new Error("This account is inactive. Contact your Gym Admin.");
  }
- return {...data,platform:null,profile};
+ const gym=await loadGymAccess(profile);
+ try{ensureGymAccess(gym)}catch(err){await supabase.auth.signOut();throw err}
+ return {...data,platform:null,profile:{...profile,gym_platform_status:gym?.platform_status||"active",gym_slug:gym?.slug||null}};
 }
 
 export async function signOut(){if(supabase)await supabase.auth.signOut();}
-
 export async function currentProfile(){
  if(!supabase)return null;
  const {data:{user}}=await supabase.auth.getUser();if(!user)return null;
@@ -35,6 +44,8 @@ export async function currentProfile(){
  const {data,error}=await supabase.from("profiles").select("*").eq("id",user.id).single();
  if(error)throw error;
  if(data.status!=="active"){await supabase.auth.signOut();return null;}
- return data;
+ const gym=await loadGymAccess(data);
+ if(gym?.platform_status==="suspended"){await supabase.auth.signOut();return null;}
+ return {...data,gym_platform_status:gym?.platform_status||"active",gym_slug:gym?.slug||null};
 }
 export { SUPER_ADMIN_EMAIL };
