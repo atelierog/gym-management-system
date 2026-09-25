@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useState} from "react";
 import { supabase } from "./lib/supabase";
 import { signIn, signOut } from "./lib/auth";
 import "./login.css";
+import "./login-fixes.css";
 
 const REMEMBER_KEY="gym_manager_remembered_login_v1";
 const ROLE_COPY={owner:{label:"Gym Owner",title:"Welcome to Your Gym Manager",subtitle:"Sign in to manage your gym"},trainer:{label:"Trainer",title:"Welcome back",subtitle:"Sign in to manage your training"},member:{label:"Member",title:"Welcome back",subtitle:"Sign in to your gym"}};
@@ -19,13 +20,10 @@ export default function Login({onLogin}){
   if(!id.trim()||!password){const msg="Enter your Login ID and password.";setError(msg);reportLoginError(msg,"VALIDATION_ERROR");return}
   setBusy(true);const cleanId=id.trim();
   try{
-   // signIn now returns the already-fetched platform/profile records, avoiding
-   // the duplicate platform_admins + profiles queries that previously delayed login.
    const data=await signIn(cleanId,password);
    const expected=routeRole==="owner"?"admin":routeRole;
    const platform=data.platform;
    const profile=data.profile;
-
    if(platform?.status==="active"){
     if(routeRole){await signOut();throw new Error(`This link is for the ${copy.label} login.`)}
    }else{
