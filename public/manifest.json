@@ -1,11 +1,11 @@
 {
-  "name": "Gym Management System",
-  "short_name": "GymOS",
+  "name": "Gym Manager",
+  "short_name": "Gym Manager",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
+  "background_color": "#f6f7f9",
   "theme_color": "#111827",
-  "description": "Complete gym management system",
+  "description": "Simple gym management for owners, trainers and members.",
   "icons": [
     {
       "src": "/icon.svg",
