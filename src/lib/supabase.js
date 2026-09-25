@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// GymOS sessions intentionally live only in sessionStorage.
+// Gym Manager sessions intentionally live only in sessionStorage.
 // Closing the browser/tab clears the auth session; reloading the page keeps it.
 const rememberStorage = {
   getItem(key) {
@@ -22,7 +22,7 @@ const rememberStorage = {
 };
 
 export function setRememberMe() {
-  // Kept for login compatibility; GymOS never persists auth across browser close.
+  // Kept for login compatibility; Gym Manager never persists auth across browser close.
 }
 
 export const supabase = url && key ? createClient(url, key, {
