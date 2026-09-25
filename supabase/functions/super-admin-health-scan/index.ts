@@ -35,7 +35,6 @@ Deno.serve(async(req)=>{
     if(!owners.length) add(g,"critical","OWNER_MISSING","Gym has no Gym Owner account.","A tenant without an owner cannot be administered normally.");
     if(!Number.isFinite(Number(g.allowed_radius_m))||Number(g.allowed_radius_m)<=0) add(g,"error","CHECKIN_CONFIG","Check-in radius is invalid.","Allowed radius must be greater than 0 metres.");
     if(g.auto_checkout_enabled&&(!Number.isFinite(Number(g.auto_checkout_minutes))||Number(g.auto_checkout_minutes)<=0)) add(g,"error","AUTO_CHECKOUT_CONFIG","Auto-checkout is enabled with an invalid duration.","Set a positive auto-checkout duration.");
-    if(g.latitude===null||g.longitude===null) add(g,"warning","LOCATION_CONFIG","Gym location is not configured.","Members and trainers may be unable to check in.");
     if(g.platform_status==="suspended") add(g,"info","GYM_SUSPENDED","Gym is suspended.","Platform access is currently blocked.");
     for(const o of owners) if(o.status!=="active") add(g,"warning","OWNER_ACCESS","Gym Owner access is suspended.","Owner account: "+o.full_name+" ("+o.login_id+").");
   }
