@@ -1,181 +1,24 @@
 import { supabase } from './lib/supabase.js';
 
 const STYLE = `
-.gymos-fix-overlay{
-  position:fixed!important;inset:0!important;z-index:2147483647!important;
-  background:rgba(9,14,24,.72);backdrop-filter:blur(8px);
-  display:flex!important;align-items:center;justify-content:center;
-  padding:18px;isolation:isolate;pointer-events:auto!important;
-}
-.gymos-fix-dialog{
-  position:relative;z-index:2147483647!important;width:min(520px,100%);
-  max-height:min(90dvh,760px);overflow:auto;
-  background:#f7f8fa!important;border:1px solid #d6dbe2;border-radius:24px;
-  box-shadow:0 28px 80px rgba(7,12,22,.48);color:#172033!important;
-}
-.gymos-fix-head{
-  background:linear-gradient(145deg,#0a1020,#1b2537)!important;
-  color:#f7f8fa!important;padding:22px 24px;border-bottom:3px solid #d7dce2;
-}
-.gymos-fix-kicker{font-size:10px;font-weight:800;letter-spacing:2px;color:#aeb8c5!important;text-transform:uppercase;margin-bottom:7px}
-.gymos-fix-title{font-size:25px;font-weight:800;line-height:1.1;margin:0;color:#f7f8fa!important}
-.gymos-fix-body{padding:24px}
-.gymos-fix-gym{background:#fff!important;border:1px solid #dfe3e8;border-radius:15px;padding:15px 16px;font-size:16px;font-weight:800;margin-bottom:15px;color:#172033!important}
-.gymos-fix-copy{font-size:14px;line-height:1.6;color:#667085!important;margin:0 0 20px}
-.gymos-fix-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.gymos-fix-actions button{
-  min-height:48px;border-radius:12px;border:1px solid #d3d8df;
-  font:inherit;font-weight:800;cursor:pointer!important;
-  opacity:1!important;text-shadow:none!important;box-shadow:none!important;
-  appearance:none!important;-webkit-appearance:none!important;
-}
-.gymos-fix-actions button:disabled{opacity:.65!important;cursor:wait!important}
-.gymos-fix-cancel{background:#fff!important;color:#172033!important;border-color:#d3d8df!important}
-.gymos-fix-danger{background:#a5164b!important;color:#fff!important;border-color:#a5164b!important}
-.gymos-fix-primary{background:#172033!important;color:#fff!important;border-color:#172033!important}
-@media(max-width:650px){
-  .gymos-fix-overlay{padding:12px}
-  .gymos-fix-dialog{border-radius:20px;max-height:92dvh}
-  .gymos-fix-head{padding:20px}
-  .gymos-fix-body{padding:20px}
-  .gymos-fix-title{font-size:22px}
-}
+.gymos-fix-overlay{position:fixed!important;inset:0!important;z-index:2147483647!important;background:rgba(9,14,24,.72);backdrop-filter:blur(8px);display:flex!important;align-items:center;justify-content:center;padding:18px;isolation:isolate;pointer-events:auto!important}
+.gymos-fix-dialog{position:relative;z-index:2147483647!important;width:min(520px,100%);max-height:min(90dvh,760px);overflow:auto;background:#f7f8fa!important;border:1px solid #d6dbe2;border-radius:24px;box-shadow:0 28px 80px rgba(7,12,22,.48);color:#172033!important}
+.gymos-fix-head{background:linear-gradient(145deg,#0a1020,#1b2537)!important;color:#f7f8fa!important;padding:22px 24px;border-bottom:3px solid #d7dce2}
+.gymos-fix-kicker{font-size:10px;font-weight:800;letter-spacing:2px;color:#aeb8c5!important;text-transform:uppercase;margin-bottom:7px}.gymos-fix-title{font-size:25px;font-weight:800;line-height:1.1;margin:0;color:#f7f8fa!important}.gymos-fix-body{padding:24px}.gymos-fix-gym{background:#fff!important;border:1px solid #dfe3e8;border-radius:15px;padding:15px 16px;font-size:16px;font-weight:800;margin-bottom:15px;color:#172033!important}.gymos-fix-copy{font-size:14px;line-height:1.6;color:#667085!important;margin:0 0 20px}.gymos-fix-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gymos-fix-actions button{min-height:48px;border-radius:12px;border:1px solid #d3d8df;font:inherit;font-weight:800;cursor:pointer!important;opacity:1!important;text-shadow:none!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important}.gymos-fix-actions button:disabled{opacity:.65!important;cursor:wait!important}.gymos-fix-cancel{background:#fff!important;color:#172033!important;border-color:#d3d8df!important}.gymos-fix-danger{background:#a5164b!important;color:#fff!important;border-color:#a5164b!important}.gymos-fix-primary{background:#172033!important;color:#fff!important;border-color:#172033!important}
+@media(max-width:650px){.gymos-fix-overlay{padding:12px}.gymos-fix-dialog{border-radius:20px;max-height:92dvh}.gymos-fix-head{padding:20px}.gymos-fix-body{padding:20px}.gymos-fix-title{font-size:22px}}
 `;
 
-function injectStyle(){
-  if(document.getElementById('gymos-super-admin-fix-style'))return;
-  const s=document.createElement('style');
-  s.id='gymos-super-admin-fix-style';
-  s.textContent=STYLE;
-  document.head.appendChild(s);
-}
-
-let currentGymName='';
-let currentGym=null;
-let busy=false;
-
-async function resolveGym(){
-  if(!supabase||!currentGymName)return null;
-  if(currentGym?.name===currentGymName)return currentGym;
-  const {data,error}=await supabase.from('gyms').select('id,name,platform_status').eq('name',currentGymName).limit(1).maybeSingle();
-  if(error||!data)return null;
-  currentGym=data;
-  return data;
-}
-
-function showFixDialog({title,gym,copy,danger=false,onConfirm,confirmText}){
-  document.querySelector('.gymos-fix-overlay')?.remove();
-  const overlay=document.createElement('div');
-  overlay.className='gymos-fix-overlay';
-  overlay.innerHTML=`<div class="gymos-fix-dialog" role="dialog" aria-modal="true"><div class="gymos-fix-head"><div class="gymos-fix-kicker">PLATFORM CONTROL</div><h2 class="gymos-fix-title"></h2></div><div class="gymos-fix-body"><div class="gymos-fix-gym"></div><p class="gymos-fix-copy"></p><div class="gymos-fix-actions"><button type="button" class="gymos-fix-cancel">Cancel</button><button type="button" class="${danger?'gymos-fix-danger':'gymos-fix-primary'} gymos-fix-confirm"></button></div></div></div>`;
-  overlay.querySelector('.gymos-fix-title').textContent=title;
-  overlay.querySelector('.gymos-fix-gym').textContent=gym?.name||currentGymName||'Gym';
-  overlay.querySelector('.gymos-fix-copy').textContent=copy;
-  overlay.querySelector('.gymos-fix-confirm').textContent=confirmText||'Confirm';
-  overlay.querySelector('.gymos-fix-cancel').onclick=()=>overlay.remove();
-  overlay.addEventListener('mousedown',e=>{if(e.target===overlay)overlay.remove()});
-  overlay.querySelector('.gymos-fix-confirm').onclick=async()=>{
-    if(busy)return;
-    busy=true;
-    const b=overlay.querySelector('.gymos-fix-confirm');
-    b.disabled=true;
-    b.textContent='Working…';
-    try{await onConfirm();overlay.remove()}
-    catch(err){alert(err?.message||'The action could not be completed.');b.disabled=false;b.textContent=confirmText||'Confirm'}
-    finally{busy=false}
-  };
-  document.body.appendChild(overlay);
-}
-
-async function updateGymStatus(status){
-  const gym=await resolveGym();
-  if(!gym)throw new Error('Could not identify this gym.');
-  const {data,error}=await supabase.functions.invoke('super-admin-update-gym-details',{body:{gym_id:gym.id,gym_status:status,owner_status:status}});
-  if(error||data?.error)throw new Error(data?.error||error?.message||'The gym access change could not be saved.');
-  currentGym={...gym,...(data?.gym||{}),platform_status:status};
-  window.location.reload();
-}
-
-async function updateOwnerStatus(status){
-  const gym=await resolveGym();
-  if(!gym)throw new Error('Could not identify this gym.');
-  const {data,error}=await supabase.functions.invoke('super-admin-update-gym-details',{body:{gym_id:gym.id,gym_status:gym.platform_status||'active',owner_status:status}});
-  if(error||data?.error)throw new Error(data?.error||error?.message||'The Gym Owner access change could not be saved.');
-  window.location.reload();
-}
-
-async function deleteGym(){
-  const gym=await resolveGym();
-  if(!gym)throw new Error('Could not identify this gym.');
-  const {data,error}=await supabase.functions.invoke('super-admin-delete-gym',{body:{gym_id:gym.id}});
-  if(error||data?.error)throw new Error(data?.error||error?.message||'The gym could not be deleted.');
-  currentGym=null;currentGymName='';window.location.reload();
-}
-
-function handleAction(text){
-  const t=text.trim().toLowerCase().replace(/\s+/g,' ');
-  if(t==='suspend gym'){
-    showFixDialog({title:'Suspend gym?',gym:currentGym,copy:'This will immediately block the Gym Owner from accessing this gym. Existing gym data will be preserved and can be restored later.',danger:true,confirmText:'Suspend Gym',onConfirm:()=>updateGymStatus('suspended')});
-    return true;
-  }
-  if(t==='activate gym'){
-    showFixDialog({title:'Activate gym?',gym:currentGym,copy:'This will restore access for the Gym Owner. Existing gym data will remain unchanged.',confirmText:'Activate Gym',onConfirm:()=>updateGymStatus('active')});
-    return true;
-  }
-  if(t==='suspend owner access' || t==='suspend gym owner access?'){
-    showFixDialog({title:'Suspend Gym Owner access?',gym:currentGym,copy:'The gym will remain on the platform, but its Gym Owner account will no longer be able to sign in. Members and trainers are not deleted.',danger:true,confirmText:'Suspend Owner',onConfirm:()=>updateOwnerStatus('suspended')});
-    return true;
-  }
-  if(t==='activate owner access' || t==='activate gym owner access'){
-    showFixDialog({title:'Restore Gym Owner access?',gym:currentGym,copy:'This will restore sign-in access for the Gym Owner. The gym status will remain unchanged.',confirmText:'Restore Owner',onConfirm:()=>updateOwnerStatus('active')});
-    return true;
-  }
-  if(t==='delete gym & all data'){
-    showFixDialog({title:'Delete gym permanently?',gym:currentGym,copy:'This permanently removes the gym, its owner account and all related gym data. This action cannot be undone.',danger:true,confirmText:'Delete Gym & All Data',onConfirm:deleteGym});
-    return true;
-  }
-  return false;
-}
-
-function syncCurrentGymFromDom(){
-  const detail=[...document.querySelectorAll('.overlay .modal')].find(m=>m.querySelector('.detail-grid'));
-  if(!detail)return;
-  const title=detail.querySelector('.modal-head h3')?.textContent?.trim();
-  if(title&&title!==currentGymName){currentGymName=title;currentGym=null}
-}
-
+function injectStyle(){if(document.getElementById('gymos-super-admin-fix-style'))return;const s=document.createElement('style');s.id='gymos-super-admin-fix-style';s.textContent=STYLE;document.head.appendChild(s)}
+let currentGymName='';let currentGym=null;let busy=false;
+async function resolveGym(){if(!supabase||!currentGymName)return null;if(currentGym?.name===currentGymName)return currentGym;const {data,error}=await supabase.from('gyms').select('id,name,platform_status').eq('name',currentGymName).limit(1).maybeSingle();if(error||!data)return null;currentGym=data;return data}
+function showFixDialog({title,gym,copy,danger=false,onConfirm,confirmText}){document.querySelector('.gymos-fix-overlay')?.remove();const overlay=document.createElement('div');overlay.className='gymos-fix-overlay';overlay.innerHTML=`<div class="gymos-fix-dialog" role="dialog" aria-modal="true"><div class="gymos-fix-head"><div class="gymos-fix-kicker">PLATFORM CONTROL</div><h2 class="gymos-fix-title"></h2></div><div class="gymos-fix-body"><div class="gymos-fix-gym"></div><p class="gymos-fix-copy"></p><div class="gymos-fix-actions"><button type="button" class="gymos-fix-cancel">Cancel</button><button type="button" class="${danger?'gymos-fix-danger':'gymos-fix-primary'} gymos-fix-confirm"></button></div></div></div>`;overlay.querySelector('.gymos-fix-title').textContent=title;overlay.querySelector('.gymos-fix-gym').textContent=gym?.name||currentGymName||'Gym';overlay.querySelector('.gymos-fix-copy').textContent=copy;overlay.querySelector('.gymos-fix-confirm').textContent=confirmText||'Confirm';overlay.querySelector('.gymos-fix-cancel').onclick=()=>overlay.remove();overlay.addEventListener('mousedown',e=>{if(e.target===overlay)overlay.remove()});overlay.querySelector('.gymos-fix-confirm').onclick=async()=>{if(busy)return;busy=true;const b=overlay.querySelector('.gymos-fix-confirm');b.disabled=true;b.textContent='Working…';try{await onConfirm();overlay.remove()}catch(err){alert(err?.message||'The action could not be completed.');b.disabled=false;b.textContent=confirmText||'Confirm'}finally{busy=false}};document.body.appendChild(overlay)}
+async function updateGymStatus(status){const gym=await resolveGym();if(!gym)throw new Error('Could not identify this gym.');const {data,error}=await supabase.functions.invoke('super-admin-suspend-gym',{body:{gym_id:gym.id,action:status==='suspended'?'suspend':'activate'}});if(error||data?.error)throw new Error(data?.error||error?.message||'The gym access change could not be saved.');currentGym={...gym,...(data?.gym||{}),platform_status:status};window.location.reload()}
+async function updateOwnerStatus(status){const gym=await resolveGym();if(!gym)throw new Error('Could not identify this gym.');const {data,error}=await supabase.functions.invoke('super-admin-update-gym-details',{body:{gym_id:gym.id,gym_status:gym.platform_status||'active',owner_status:status}});if(error||data?.error)throw new Error(data?.error||error?.message||'The Gym Owner access change could not be saved.');window.location.reload()}
+async function deleteGym(){const gym=await resolveGym();if(!gym)throw new Error('Could not identify this gym.');const {data,error}=await supabase.functions.invoke('super-admin-delete-gym',{body:{gym_id:gym.id}});if(error||data?.error)throw new Error(data?.error||error?.message||'The gym could not be deleted.');currentGym=null;currentGymName='';window.location.reload()}
+function handleAction(text){const t=text.trim().toLowerCase().replace(/\s+/g,' ');if(t==='suspend gym'){showFixDialog({title:'Suspend gym?',gym:currentGym,copy:'This will block the Gym Owner, trainers, and members from accessing this gym. Existing gym data will be preserved and can be restored by the Super Admin.',danger:true,confirmText:'Suspend Gym',onConfirm:()=>updateGymStatus('suspended')});return true}if(t==='activate gym'){showFixDialog({title:'Restore gym access?',gym:currentGym,copy:'This will restore access to this gym for its Gym Owner, trainers, and members. Existing gym data will remain unchanged.',confirmText:'Restore Gym',onConfirm:()=>updateGymStatus('active')});return true}if(t==='suspend owner access'||t==='suspend gym owner access?'){showFixDialog({title:'Disable Gym Owner account?',gym:currentGym,copy:'This will block only the Gym Owner from signing in. The gym remains active for members and trainers.',danger:true,confirmText:'Disable Owner',onConfirm:()=>updateOwnerStatus('suspended')});return true}if(t==='activate owner access'||t==='activate gym owner access'){showFixDialog({title:'Restore Gym Owner account?',gym:currentGym,copy:'This will restore sign-in access for the Gym Owner. The gym status will remain unchanged.',confirmText:'Restore Owner',onConfirm:()=>updateOwnerStatus('active')});return true}if(t==='delete gym & all data'){showFixDialog({title:'Delete gym permanently?',gym:currentGym,copy:'This permanently removes the gym, its owner account and all related gym data. This action cannot be undone.',danger:true,confirmText:'Delete Gym & All Data',onConfirm:deleteGym});return true}return false}
+function syncCurrentGymFromDom(){const detail=[...document.querySelectorAll('.overlay .modal')].find(m=>m.querySelector('.detail-grid'));if(!detail)return;const title=detail.querySelector('.modal-head h3')?.textContent?.trim();if(title&&title!==currentGymName){currentGymName=title;currentGym=null}}
 function removeInjectedDuplicateDeletes(){document.querySelectorAll('.gymos-delete-action').forEach(b=>b.remove())}
-
-function watchDom(){
-  const root=document.querySelector('.super-admin-platform');
-  if(!root)return;
-  const observer=new MutationObserver(()=>{syncCurrentGymFromDom();removeInjectedDuplicateDeletes()});
-  observer.observe(root,{childList:true,subtree:true});
-  document.addEventListener('click',e=>{
-    const btn=e.target.closest?.('button');
-    if(!btn)return;
-    const row=btn.closest('.gym-name-row');
-    if(row){currentGymName=row.querySelector('span')?.textContent?.trim()||'';currentGym=null;return}
-    if(!root.contains(btn))return;
-    const text=(btn.textContent||'').trim();
-    if(handleAction(text)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}
-  },true);
-  syncCurrentGymFromDom();
-  removeInjectedDuplicateDeletes();
-}
-
-function autoCloseCredentialAfterSuccessfulCreation(){
-  const observer=new MutationObserver(()=>{
-    const modals=[...document.querySelectorAll('.overlay .modal')];
-    const credential=modals.find(m=>m.querySelector('.credential-box'));
-    const notice=document.querySelector('.platform-notice .notice');
-    if(credential&&notice&&!notice.classList.contains('notice-error')&&/Gym created/i.test(notice.textContent||''))credential.querySelector('.modal-head button')?.click();
-  });
-  observer.observe(document.body,{childList:true,subtree:true});
-}
-
-function start(){
-  injectStyle();
-  const timer=setInterval(()=>{if(document.querySelector('.super-admin-platform')){clearInterval(timer);watchDom();autoCloseCredentialAfterSuccessfulCreation()}},100);
-}
+function watchDom(){const root=document.querySelector('.super-admin-platform');if(!root)return;const observer=new MutationObserver(()=>{syncCurrentGymFromDom();removeInjectedDuplicateDeletes()});observer.observe(root,{childList:true,subtree:true});document.addEventListener('click',e=>{const btn=e.target.closest?.('button');if(!btn)return;const row=btn.closest('.gym-name-row');if(row){currentGymName=row.querySelector('span')?.textContent?.trim()||'';currentGym=null;return}if(!root.contains(btn))return;const text=(btn.textContent||'').trim();if(handleAction(text)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}},true);syncCurrentGymFromDom();removeInjectedDuplicateDeletes()}
+function autoCloseCredentialAfterSuccessfulCreation(){const observer=new MutationObserver(()=>{const modals=[...document.querySelectorAll('.overlay .modal')];const credential=modals.find(m=>m.querySelector('.credential-box'));const notice=document.querySelector('.platform-notice .notice');if(credential&&notice&&!notice.classList.contains('notice-error')&&/Gym created/i.test(notice.textContent||''))credential.querySelector('.modal-head button')?.click()});observer.observe(document.body,{childList:true,subtree:true})}
+function start(){injectStyle();const timer=setInterval(()=>{if(document.querySelector('.super-admin-platform')){clearInterval(timer);watchDom();autoCloseCredentialAfterSuccessfulCreation()}},100)}
 start();
