@@ -1,14 +1,16 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "gym-management-system",
-  "compatibility_date": "2026-09-22",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-25",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
   "routes": [
     {
-      "pattern": "atelierog.co.in/Gym-Manager/*",
+      "pattern": "atelierog.co.in/Gym-Manager*",
       "zone_name": "atelierog.co.in"
     }
   ]
