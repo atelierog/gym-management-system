@@ -1,4 +1,4 @@
--- GymOS V1 current database schema
+-- Gym Manager V1 current database schema
 -- Production hardening changes are recorded in:
 -- supabase/migrations/20260922_gymos_hardening.sql
 -- Keep this file aligned with production before provisioning a new tenant.
@@ -8,6 +8,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.gyms (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  slug text unique,
   latitude numeric(9,6),
   longitude numeric(9,6),
   allowed_radius_m integer not null default 100,
