@@ -5,9 +5,12 @@
     [/GymOS Platform/g, 'Gym Manager'],
     [/GYMOS PLATFORM/g, 'GYM MANAGER'],
     [/GymOS/g, 'Gym Manager'],
-    [/GYMOS/g, 'Gym Manager']
+    [/GYMOS/g, 'Gym Manager'],
+    [/OWNER ACCESS/g, 'OWNER ACCOUNT'],
+    [/Owner Access/g, 'Owner Account'],
+    [/Owner access/g, 'Owner account']
   ];
-  const PROJECT_URL='https://kwzdxqhzhnmrjfyhgzxa.supabase.co';
+  const PROJECT_URL='https://kwzdxhhnmrjfyhgzxa.supabase.co';
   const PUBLISHABLE_KEY='sb_publishable_57Izo4d8N0fAYzt6jYA_EQ_TkoDHPty';
 
   function normalize(value){
@@ -175,7 +178,7 @@
     document.querySelectorAll('.modal').forEach(modal=>{
       if(modal.dataset.gmDeleteAdded==='1') return;
       const text=modal.textContent||''; const title=(modal.querySelector('.modal-head h3')?.textContent||'').trim();
-      if(!title || !/Gym status/i.test(text) || !/Owner Access/i.test(text)) return;
+      if(!title || !/Gym status/i.test(text) || !/Owner (Access|Account)/i.test(text)) return;
       const body=modal.querySelector('.modal-body'); if(!body) return;
       const button=document.createElement('button'); button.type='button'; button.className='danger-button wide'; button.textContent='Delete Gym & All Data'; button.style.marginTop='12px';
       body.appendChild(button); modal.dataset.gmDeleteAdded='1';
