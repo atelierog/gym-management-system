@@ -22,9 +22,9 @@
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-      /* Hide the React drawer: it lives inside the main content stacking context. */
-      .admin-app > .admin-main > .mobile-drawer,
-      .admin-app > .admin-main > .mobile-scrim { display:none!important; }
+      /* The React drawer is kept only as a navigation target. Never show its UI. */
+      .admin-app .mobile-drawer,
+      .admin-app .mobile-scrim { display:none!important; }
       #${SCRIM_ID}{position:fixed;inset:0;z-index:2147483000;background:rgba(16,24,40,.58);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .18s ease}
       #${SCRIM_ID}.is-open{opacity:1;pointer-events:auto}
       #${DRAWER_ID}{position:fixed;inset:0 auto 0 0;z-index:2147483001;width:min(340px,88vw);height:100dvh;box-sizing:border-box;background:#0b1220;color:#fff;border:1px solid #29364a;border-left:0;border-radius:0 22px 22px 0;box-shadow:20px 0 70px rgba(0,0,0,.52);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-110%);transition:transform .22s cubic-bezier(.2,.8,.2,1);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -35,11 +35,11 @@
       #${DRAWER_ID} .gm-drawer-brand b{font-size:13px;line-height:1;font-weight:750}
       #${DRAWER_ID} .gm-drawer-brand small{display:block;color:#8995a7;font-size:9px;margin-top:3px}
       #${DRAWER_ID} .gm-drawer-close{width:36px;height:36px;border:1px solid #344054;border-radius:10px;background:#ffffff08;color:#fff;font-size:21px;line-height:1;display:grid;place-items:center;cursor:pointer;flex:none}
-      #${DRAWER_ID} .gm-drawer-nav{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 14px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-      #${DRAWER_ID} .gm-nav-group{margin-top:15px}
+      #${DRAWER_ID} .gm-drawer-nav{display:flex!important;flex-direction:column!important;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 14px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;align-items:stretch!important}
+      #${DRAWER_ID} .gm-nav-group{display:block!important;width:100%!important;flex:none!important;margin-top:15px}
       #${DRAWER_ID} .gm-nav-group:first-child{margin-top:0}
-      #${DRAWER_ID} .gm-nav-label{display:block;margin:0 8px 6px;color:#78869b;font-size:9px;letter-spacing:1.5px;font-weight:800}
-      #${DRAWER_ID} .gm-nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 10px;border:0;border-radius:11px;background:transparent;color:#b8c2d0;text-align:left;cursor:pointer;font-size:13px;line-height:1.2}
+      #${DRAWER_ID} .gm-nav-label{display:block!important;width:auto!important;margin:0 8px 6px;color:#78869b;font-size:9px;letter-spacing:1.5px;font-weight:800}
+      #${DRAWER_ID} .gm-nav-item{display:flex!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;padding:12px 10px;border:0;border-radius:11px;background:transparent;color:#b8c2d0;text-align:left;cursor:pointer;font-size:13px;line-height:1.2;white-space:nowrap}
       #${DRAWER_ID} .gm-nav-item:hover,#${DRAWER_ID} .gm-nav-item:active{background:#ffffff12;color:#fff}
       #${DRAWER_ID} .gm-nav-icon{width:19px;height:19px;flex:none;color:currentColor}
       #${DRAWER_ID} .gm-drawer-footer{border-top:1px solid #29364a;padding:8px 14px 12px;flex:none;background:#0b1220}
@@ -193,12 +193,16 @@
   function bind() {
     if (!isOwner()) return;
     installStyle();
-    const menu = document.querySelector(".admin-app .owner-menu-button");
-    if (menu && menu.dataset.gmNativeBound !== "1") {
-      menu.dataset.gmNativeBound = "1";
-      menu.addEventListener("click", () => setTimeout(open, 0));
-    }
   }
+
+  /* Capture the menu tap before React's delegated onClick can open its old drawer. */
+  document.addEventListener("click", event => {
+    const menu = event.target?.closest?.(".admin-app .owner-menu-button");
+    if (!menu || !isOwner()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    open();
+  }, true);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") close();
