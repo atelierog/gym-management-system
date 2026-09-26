@@ -7,5 +7,15 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "atelierog.co.in/Gym-Manager/*",
+      "zone_name": "atelierog.co.in"
+    },
+    {
+      "pattern": "atelierog.co.in/gym-manager/*",
+      "zone_name": "atelierog.co.in"
+    }
+  ]
 }
