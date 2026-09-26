@@ -51,6 +51,19 @@ async function reportError(code,operation,message,detail=""){
   }catch{}
 }
 
+function hideOwnerSuspensionOption(){
+  const buttons=[...document.querySelectorAll("button")];
+  buttons.forEach(button=>{
+    const label=String(button.textContent||"").trim().toLowerCase().replace(/\s+/g," ");
+    if(label==="suspend owner account" || label==="suspend gym owner account" || label==="suspend owner access"){
+      button.style.display="none";
+      button.setAttribute("aria-hidden","true");
+      button.setAttribute("tabindex","-1");
+      button.disabled=true;
+    }
+  });
+}
+
 function findGymName(){
   const detail=[...document.querySelectorAll(".overlay .modal")].find(m=>m.querySelector(".detail-grid"));
   const title=detail?.querySelector(".modal-head h3")?.textContent?.trim();
@@ -81,13 +94,6 @@ async function setGymStatus(status){
   const gym=await resolveGym();
   const data=await invoke("super-admin-suspend-gym",{gym_id:gym.id,action:status==="suspended"?"suspend":"activate"},"The gym access change could not be saved.");
   if(data?.platform_status!==status && data?.gym?.platform_status!==status) throw new Error("The server did not confirm the requested gym status change.");
-  window.location.reload();
-}
-
-async function setOwnerStatus(status){
-  const gym=await resolveGym();
-  const data=await invoke("super-admin-update-owner-status",{gym_id:gym.id,owner_status:status},"The Gym Owner access change could not be saved.");
-  if(data?.owner?.status!==status) throw new Error("The server did not confirm the requested Gym Owner status change.");
   window.location.reload();
 }
 
@@ -168,15 +174,25 @@ function actionFor(text){
   const t=String(text||"").trim().toLowerCase().replace(/\s+/g," ");
   if(t==="suspend gym") return {title:"Suspend gym?",copy:"This will immediately block the Gym Owner, trainers, and members from accessing this gym. Existing gym data will be preserved and can be restored by the Super Admin.",confirmText:"Suspend Gym",danger:true,operation:"suspend_gym",run:()=>setGymStatus("suspended")};
   if(t==="activate gym") return {title:"Restore gym access?",copy:"This will restore access to this gym for its Gym Owner, trainers, and members. Existing gym data will remain unchanged.",confirmText:"Restore Gym",danger:false,operation:"activate_gym",run:()=>setGymStatus("active")};
-  if(["suspend owner access","suspend gym owner access","suspend gym owner access?"].includes(t)) return {title:"Suspend Gym Owner account?",copy:"The Gym Owner will no longer be able to access this gym. The gym itself remains active.",confirmText:"Confirm",danger:true,operation:"suspend_owner_access",run:()=>setOwnerStatus("suspended")};
-  if(["activate owner access","activate gym owner access","activate gym owner access?"].includes(t)) return {title:"Restore Gym Owner account?",copy:"This will restore sign-in access for the Gym Owner. The gym status will remain unchanged.",confirmText:"Confirm",danger:false,operation:"activate_owner_access",run:()=>setOwnerStatus("active")};
   return null;
 }
 
 function installClickHandler(){
+  const observer=new MutationObserver(hideOwnerSuspensionOption);
+  observer.observe(document.body,{childList:true,subtree:true});
+  hideOwnerSuspensionOption();
+
   document.addEventListener("click",event=>{
     const button=event.target?.closest?.("button");
     if(!button)return;
+    const label=String(button.textContent||"").trim().toLowerCase().replace(/\s+/g," ");
+    if(label==="suspend owner account" || label==="suspend gym owner account" || label==="suspend owner access"){
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      hideOwnerSuspensionOption();
+      return;
+    }
     const row=button.closest?.(".gym-name-row");
     if(row){
       currentGymName=row.querySelector("span")?.textContent?.trim()||"";
