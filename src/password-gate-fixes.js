@@ -1,3 +1,5 @@
+import "./password-gate-fixes.css";
+
 const GATE_SELECTOR = ".password-gate";
 
 function hardenPasswordFields(gate) {
@@ -18,14 +20,13 @@ function hardenPasswordFields(gate) {
     input.setAttribute("spellcheck", "false");
     input.setAttribute("autocapitalize", "none");
 
-    // Prevent browser/password-manager autofill from putting the temporary
-    // password into only the first field and causing a false mismatch.
+    // Do not let the browser/password manager inject the temporary password
+    // into only the first field and create a false mismatch.
     input.readOnly = true;
     input.addEventListener("focus", () => {
       input.readOnly = false;
     }, { once: true });
 
-    // Never carry a browser-injected value into the new-password form.
     if (index === 0 && input.value) input.value = "";
   });
 }
@@ -37,8 +38,7 @@ function check(root = document) {
 }
 
 const observer = new MutationObserver(() => {
-  const gateVisible = check(document);
-  if (gateVisible) {
+  if (check(document)) {
     const splash = document.getElementById("boot-splash");
     if (splash) {
       splash.classList.add("is-done");
