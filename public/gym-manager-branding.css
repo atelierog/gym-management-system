@@ -50,3 +50,114 @@
   .platform-sidebar nav button{padding:9px 11px!important}
   .platform-main{padding:18px 13px 32px!important}
 }
+
+/* ================================================================
+   Gym Owner — Platinum theme
+   Reuses the Super Admin visual language without changing owner logic.
+   ================================================================ */
+.admin-app{
+  --gm-accent:#aeb6c0!important;
+  --gm-accent-soft:#f1f3f5!important;
+  --gm-line:#dfe4e9!important;
+  --gm-card:#ffffff!important;
+  --gm-soft:#f6f7f9!important;
+  background:linear-gradient(180deg,#f7f8fa 0%,#eef1f4 100%)!important;
+  color:#111827!important;
+}
+.admin-app .owner-topbar{
+  background:linear-gradient(180deg,#0b1220 0%,#121923 100%)!important;
+  border-bottom:1px solid #303844!important;
+  box-shadow:0 8px 24px #0b122014!important;
+}
+.admin-app .owner-topbar .brand-mark,
+.admin-app .mobile-drawer .mobile-brand .brand-mark{
+  background:linear-gradient(145deg,#ffffff 0%,#dce1e6 42%,#aeb7c1 100%)!important;
+  color:#111827!important;
+  box-shadow:0 5px 18px #0004,0 0 0 1px #ffffff80 inset!important;
+}
+.admin-app .owner-menu-button{
+  background:#ffffff0d!important;
+  border-color:#3b4654!important;
+  color:#eef1f4!important;
+}
+.admin-app .admin-main{background:transparent!important}
+.admin-app .page-heading .eyebrow{color:#7a8592!important}
+.admin-app .page-heading h2{color:#111827!important}
+.admin-app .page-heading p{color:#6f7a87!important}
+.admin-app .owner-dashboard-hero{
+  background:radial-gradient(circle at 88% 18%,#66717d 0,#26303b 38%,#0f1722 100%)!important;
+  border:1px solid #303844!important;
+  box-shadow:0 14px 32px #1118271a!important;
+}
+.admin-app .owner-dashboard-hero .eyebrow{color:#d6dbe0!important}
+.admin-app .owner-dashboard-hero p{color:#c4cbd3!important}
+.admin-app .owner-dashboard-hero .primary,
+.admin-app button.primary{
+  background:linear-gradient(135deg,#ffffff 0%,#dce1e6 44%,#aeb6c0 100%)!important;
+  color:#111827!important;
+  border:1px solid #b8c0c8!important;
+  box-shadow:0 7px 18px #0003!important;
+}
+.admin-app .owner-kpi,
+.admin-app .owner-action,
+.admin-app .owner-attention,
+.admin-app .owner-summary-link,
+.admin-app .panel{
+  background:rgba(255,255,255,.96)!important;
+  border-color:#dfe4e9!important;
+  box-shadow:0 4px 14px #1118270b!important;
+}
+.admin-app .owner-kpi:hover,
+.admin-app .owner-action:hover,
+.admin-app .owner-summary-link:hover{border-color:#bfc6cd!important}
+.admin-app .owner-action .action-icon,
+.admin-app .attention-icon,
+.admin-app .live-pill,
+.admin-app .generated-credential-note{
+  background:#eef1f4!important;
+  color:#46515d!important;
+}
+.admin-app .attention-icon.danger{background:#f9eeee!important;color:#a13b48!important}
+.admin-app .attention-icon.warning{background:#f1f3f5!important;color:#596573!important}
+.admin-app .owner-clear .attention-icon{background:#edf2ef!important;color:#3d6b57!important}
+.admin-app .owner-kpi strong,
+.admin-app .owner-summary-link strong,
+.admin-app .owner-action b,
+.admin-app .owner-attention-item b,
+.admin-app .owner-section-head h3{color:#182230!important}
+.admin-app .owner-kpi small,
+.admin-app .owner-kpi span,
+.admin-app .owner-summary-link span,
+.admin-app .owner-summary-link small,
+.admin-app .owner-action small,
+.admin-app .owner-attention-item small{color:#7a8592!important}
+.admin-app .form input,.admin-app .form select,.admin-app .form textarea{
+  border-color:#cfd5db!important;
+  background:#fff!important;
+}
+.admin-app .secondary{
+  background:#f1f3f5!important;
+  color:#26303b!important;
+  border-color:#c8ced5!important;
+}
+.admin-app .mobile-drawer{
+  background:linear-gradient(180deg,#0b1220 0%,#121923 100%)!important;
+  border-color:#303844!important;
+}
+.admin-app .mobile-drawer .nav-item.active,
+.admin-app .mobile-drawer .nav-item:hover{
+  background:linear-gradient(135deg,#eef1f4,#c9d0d7)!important;
+  color:#111827!important;
+}
+.admin-app .mobile-drawer .nav-item.active .nav-icon,
+.admin-app .mobile-drawer .nav-item:hover .nav-icon{color:#111827!important}
+.admin-app .modal{
+  border:1px solid #dfe4e9!important;
+  box-shadow:0 24px 70px #0b122044!important;
+}
+.admin-app .modal-header{border-bottom-color:#e5e8eb!important}
+
+@media(max-width:700px){
+  .admin-app .owner-dashboard-hero{box-shadow:0 10px 24px #11182714!important}
+  .admin-app .owner-kpi,.admin-app .owner-action,.admin-app .owner-attention,.admin-app .owner-summary-link{box-shadow:0 3px 10px #11182709!important}
+}
