@@ -31,7 +31,17 @@ Deno.serve(async(req)=>{
   if(oe) return Response.json({error:oe.message},{status:400,headers:CORS});
   if(!owner) return Response.json({error:"Gym Owner account not found."},{status:404,headers:CORS});
 
-  const {error:ae2}=await admin.from("audit_logs").insert({gym_id:gymId,actor_id:actor.id,action:"update_gym_owner_status",entity:"profile",entity_id:owner.id,details:{owner_status:status}});
+  // platform_admins are not rows in profiles, while audit_logs.actor_id
+  // references profiles. Keep the platform actor in JSON details instead
+  // of violating the audit_logs foreign key.
+  const {error:ae2}=await admin.from("audit_logs").insert({
+    gym_id:gymId,
+    actor_id:null,
+    action:"update_gym_owner_status",
+    entity:"profile",
+    entity_id:owner.id,
+    details:{owner_status:status,platform_admin_id:actor.id}
+  });
   if(ae2) return Response.json({error:ae2.message},{status:400,headers:CORS});
 
   return Response.json({ok:true,gym,owner},{headers:{...CORS,"Content-Type":"application/json"}});
