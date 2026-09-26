@@ -64,6 +64,24 @@ function hideOwnerSuspensionOption(){
   });
 }
 
+function repairEmptyConfirmButtons(){
+  const modals=[...document.querySelectorAll(".overlay .modal")];
+  modals.forEach(modal=>{
+    const title=String(modal.querySelector(".modal-head h3")?.textContent||"").trim().toLowerCase();
+    if(!title)return;
+    const buttons=[...modal.querySelectorAll("button")];
+    const empty=buttons.filter(button=>!String(button.textContent||"").trim() && !button.getAttribute("aria-label"));
+    if(!empty.length)return;
+    const target=empty[empty.length-1];
+    let label="Confirm";
+    if(title.includes("delete gym")) label="Delete Gym";
+    else if(title.includes("suspend gym")) label="Suspend Gym";
+    else if(title.includes("restore gym") || title.includes("activate gym")) label="Activate Gym";
+    target.textContent=label;
+    target.setAttribute("aria-label",label);
+  });
+}
+
 function findGymName(){
   const detail=[...document.querySelectorAll(".overlay .modal")].find(m=>m.querySelector(".detail-grid"));
   const title=detail?.querySelector(".modal-head h3")?.textContent?.trim();
@@ -178,9 +196,13 @@ function actionFor(text){
 }
 
 function installClickHandler(){
-  const observer=new MutationObserver(hideOwnerSuspensionOption);
+  const observer=new MutationObserver(()=>{
+    hideOwnerSuspensionOption();
+    repairEmptyConfirmButtons();
+  });
   observer.observe(document.body,{childList:true,subtree:true});
   hideOwnerSuspensionOption();
+  repairEmptyConfirmButtons();
 
   document.addEventListener("click",event=>{
     const button=event.target?.closest?.("button");
