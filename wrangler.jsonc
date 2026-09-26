@@ -3,6 +3,12 @@
   "name": "gym-management-system",
   "main": "worker.js",
   "compatibility_date": "2026-09-25",
+  "routes": [
+    {
+      "pattern": "atelierog.co.in/gym-manager*",
+      "zone_name": "atelierog.co.in"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
