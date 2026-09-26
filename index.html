@@ -57,9 +57,10 @@
   <div id="root"></div>
   <script src="./gym-manager-branding.js?v=1"></script>
   <script>
-    (function(){var splash=document.getElementById('boot-splash'),root=document.getElementById('root'),started=Date.now(),hidden=false,minimum=2800;function finish(){if(hidden)return;hidden=true;var wait=Math.max(0,minimum-(Date.now()-started));setTimeout(function(){splash.classList.add('is-done');setTimeout(function(){if(splash.parentNode)splash.remove()},1100)},wait)}var observer=new MutationObserver(function(){if(root.children.length)finish()});observer.observe(root,{childList:true});setTimeout(function(){finish()},4300);window.addEventListener('error',function(){if(root.children.length)finish()});window.addEventListener('unhandledrejection',function(){if(root.children.length)finish()})})();
+    (function(){var splash=document.getElementById('boot-splash'),root=document.getElementById('root'),started=Date.now(),hidden=false,minimum=2800;function finish(){if(hidden)return;hidden=true;var gate=root.querySelector('.password-gate'),wait=gate?0:Math.max(0,minimum-(Date.now()-started));setTimeout(function(){splash.classList.add('is-done');setTimeout(function(){if(splash.parentNode)splash.remove()},1100)},wait)}var observer=new MutationObserver(function(){if(root.children.length)finish()});observer.observe(root,{childList:true});setTimeout(function(){finish()},4300);window.addEventListener('error',function(){if(root.children.length)finish()});window.addEventListener('unhandledrejection',function(){if(root.children.length)finish()})})();
   </script>
   <script type="module" src="./src/super-admin-fixes.js"></script>
+  <script type="module" src="./src/password-gate-fixes.js"></script>
   <script type="module" src="./src/main.jsx"></script>
 </body>
 </html>
