@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   }
 
   const {
-    login_id,
+    login_id: requestedLoginId,
     full_name,
     role = "member",
     phone,
@@ -53,18 +53,47 @@ Deno.serve(async (req) => {
     password
   } = body;
 
-  if (!login_id || !full_name || !password || !["member", "trainer"].includes(String(role)))
-    return json(
-      { error: "login_id, full_name, password and valid role are required" },
-      400
-    );
+  const normalizedRole = String(role).trim().toLowerCase();
+  if (!full_name || !password || !["member", "trainer"].includes(normalizedRole)) {
+    return json({ error: "full_name, password and valid role are required" }, 400);
+  }
 
-  const passwordMissing=[];if(password.length<8)passwordMissing.push("at least 8 characters");if(!/[A-Z]/.test(password))passwordMissing.push("1 uppercase letter");if(!/[a-z]/.test(password))passwordMissing.push("1 lowercase letter");if(!/[0-9]/.test(password))passwordMissing.push("1 number");if(!/[^A-Za-z0-9]/.test(password))passwordMissing.push("1 special character");if(passwordMissing.length)return json({error:"Password must contain "+passwordMissing.join(", ")+"."},400);
+  const normalizedPhone = String(phone || "").trim();
+  const normalizedCustomerEmail = String(customerEmail || "").trim().toLowerCase();
+  if (!normalizedPhone) return json({ error: "Phone is required" }, 400);
+  if (!normalizedCustomerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedCustomerEmail)) {
+    return json({ error: "A valid email address is required" }, 400);
+  }
 
-  const normalizedLogin = String(login_id).trim();
+  const passwordMissing: string[] = [];
+  if (String(password).length < 8) passwordMissing.push("at least 8 characters");
+  if (!/[A-Z]/.test(String(password))) passwordMissing.push("1 uppercase letter");
+  if (!/[a-z]/.test(String(password))) passwordMissing.push("1 lowercase letter");
+  if (!/[0-9]/.test(String(password))) passwordMissing.push("1 number");
+  if (!/[^A-Za-z0-9]/.test(String(password))) passwordMissing.push("1 special character");
+  if (passwordMissing.length) {
+    return json({ error: "Temporary password must contain " + passwordMissing.join(", ") + "." }, 400);
+  }
+
+  let normalizedLogin = String(requestedLoginId || "").trim();
+  if (!normalizedLogin) {
+    const { data: generatedId, error: idError } = await admin.rpc("allocate_login_id", {
+      p_role: normalizedRole,
+      p_gym_id: actorProfile.gym_id
+    });
+    if (idError || !generatedId) {
+      return json({ error: idError?.message || "Could not generate account ID" }, 500);
+    }
+    normalizedLogin = String(generatedId);
+  }
+
+  const expectedPrefix = normalizedRole === "trainer" ? "TRN" : "MEM";
+  const idPattern = new RegExp(`^${expectedPrefix}-\\d{2}-\\d{3,}$`);
+  if (!idPattern.test(normalizedLogin)) {
+    return json({ error: "Invalid account ID format" }, 400);
+  }
+
   const authEmail = normalizedLogin.toLowerCase() + "@gymos.local";
-  const normalizedCustomerEmail =
-    String(customerEmail || "").trim().toLowerCase() || null;
 
   const { data: newUser, error: ue } = await admin.auth.admin.createUser({
     email: authEmail,
@@ -81,9 +110,9 @@ Deno.serve(async (req) => {
       gym_id: actorProfile.gym_id,
       login_id: normalizedLogin,
       full_name: String(full_name).trim(),
-      role: String(role),
+      role: normalizedRole,
       status: "active",
-      phone: phone ? String(phone).trim() : null,
+      phone: normalizedPhone,
       email: normalizedCustomerEmail,
       password_change_required: true,
       password_reset_at: new Date().toISOString()
@@ -100,7 +129,7 @@ Deno.serve(async (req) => {
     gym_id: actorProfile.gym_id,
     actor_id: actor.id,
     action: "create_account",
-    entity: String(role),
+    entity: normalizedRole,
     entity_id: profile.id,
     details: { login_id: profile.login_id }
   });
