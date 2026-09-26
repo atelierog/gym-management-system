@@ -16,8 +16,25 @@ Deno.serve(async(req)=>{
   if(!platform||platform.status!=="active") return Response.json({error:"Super Admin access required"},{status:403,headers:CORS});
 
   const body=await req.json();
-  const gymId=String(body.gym_id||"").trim();
-  if(!gymId) return Response.json({error:"Gym ID is required"},{status:400,headers:CORS});
+  let gymId=String(body.gym_id||"").trim();
+
+  // Resolve the gym on the trusted server side. The browser previously performed
+  // a direct PostgREST lookup before calling this function, which could surface a
+  // generic "Failed to fetch" even though the delete function itself was healthy.
+  if(!gymId && body.loginId){
+    const {data:owner}=await admin.from("profiles").select("gym_id").eq("login_id",String(body.loginId).trim()).eq("role","admin").limit(1).maybeSingle();
+    gymId=String(owner?.gym_id||"").trim();
+  }
+  if(!gymId && body.ownerEmail){
+    const {data:owner}=await admin.from("profiles").select("gym_id").eq("email",String(body.ownerEmail).trim().toLowerCase()).eq("role","admin").limit(1).maybeSingle();
+    gymId=String(owner?.gym_id||"").trim();
+  }
+  if(!gymId && body.gymName){
+    const {data:gymByName}=await admin.from("gyms").select("id").eq("name",String(body.gymName).trim()).limit(1).maybeSingle();
+    gymId=String(gymByName?.id||"").trim();
+  }
+  if(!gymId) return Response.json({error:"Could not identify the selected gym"},{status:400,headers:CORS});
+
   const {data:gym,error:ge}=await admin.from("gyms").select("id,name").eq("id",gymId).single();
   if(ge||!gym) return Response.json({error:"Gym not found"},{status:404,headers:CORS});
 
