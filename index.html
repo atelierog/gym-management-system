@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070a0f">
   <meta name="description" content="Gym Manager — simple gym management for owners, trainers and members.">
   <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="./icon.svg?v=6" type="image/svg+xml">
+  <link rel="icon" href="./icon.svg?v=7" type="image/svg+xml">
   <link rel="stylesheet" href="./gym-manager-branding.css?v=1">
   <title>Gym Manager</title>
   <style>
@@ -30,7 +30,7 @@
     .bench:before{content:"";position:absolute;width:10px;height:100px;background:#202731;left:28%;top:2px;transform:rotate(15deg)}
     .bench:after{content:"";position:absolute;width:10px;height:90px;background:#202731;right:10%;top:5px;transform:rotate(-15deg)}
     .boot-content{position:relative;z-index:4;width:min(88vw,430px);min-height:100vh;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:50px 24px}
-    .boot-logo{position:relative;width:132px;height:132px;object-fit:contain;border-radius:34px;filter:drop-shadow(0 0 28px rgba(214,220,226,.3));animation:logo-in 1s cubic-bezier(.2,.85,.2,1) both}
+    .boot-logo{position:relative;width:132px;height:132px;display:block;flex:0 0 auto;border-radius:34px;filter:drop-shadow(0 0 28px rgba(214,220,226,.3));animation:logo-in 1s cubic-bezier(.2,.85,.2,1) both}
     .boot-title{margin-top:28px;font-size:36px;line-height:1;font-weight:800;letter-spacing:-1.4px;animation:rise .8s .25s both}.boot-title span{color:#e6eaee}
     .boot-tag{margin-top:13px;color:#c0c5cc;font-size:11px;letter-spacing:4px;text-transform:uppercase;animation:rise .8s .4s both}
     .boot-status{margin-top:54px;width:min(315px,78vw);animation:rise .8s .55s both}.boot-track{height:5px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;box-shadow:inset 0 1px 2px #000}.boot-progress{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#8f99a3,#f4f6f8);box-shadow:0 0 18px rgba(220,226,232,.6);animation:progress 2.65s cubic-bezier(.2,.7,.2,1) forwards}.boot-loading{margin-top:14px;color:#a1a8b3;font-size:10px;letter-spacing:3px;text-transform:uppercase}.boot-dots{display:flex;gap:6px;margin-top:18px}.boot-dots i{width:5px;height:5px;border-radius:50%;background:#cbd2d9;animation:dot 1.1s infinite}.boot-dots i:nth-child(2){animation-delay:.14s}.boot-dots i:nth-child(3){animation-delay:.28s}.boot-credit{position:absolute;bottom:27px;color:#737b87;font-size:9px;letter-spacing:2.5px;text-transform:uppercase}
@@ -48,7 +48,21 @@
     <div class="boot-scene"></div><div class="boot-ceiling"></div><div class="boot-light"></div><div class="boot-arc"></div><div class="boot-floor"></div>
     <div class="boot-equipment"><div class="rack"></div><div class="bench"></div></div>
     <div class="boot-content">
-      <img class="boot-logo" src="./icon.svg?v=6" alt="Gym Manager">
+      <svg class="boot-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gym Manager icon">
+        <defs>
+          <linearGradient id="boot-platinum" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.2" stop-color="#e9edf1"/><stop offset="0.5" stop-color="#b8c0c8"/><stop offset="0.78" stop-color="#f8fafc"/><stop offset="1" stop-color="#7d8792"/></linearGradient>
+          <filter id="boot-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="boot-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <rect width="512" height="512" rx="116" fill="#070a0e"/>
+        <rect x="22" y="22" width="468" height="468" rx="101" fill="none" stroke="#c5ccd3" stroke-width="16" opacity=".18" filter="url(#boot-soft)"/>
+        <rect x="27" y="27" width="458" height="458" rx="96" fill="#0d1117" stroke="url(#boot-platinum)" stroke-width="13" filter="url(#boot-glow)"/>
+        <rect x="43" y="43" width="426" height="426" rx="82" fill="#0b0f14" stroke="#eef2f5" stroke-opacity=".45" stroke-width="2"/>
+        <g fill="url(#boot-platinum)" filter="url(#boot-glow)"><rect x="187" y="111" width="138" height="10" rx="5"/><rect x="165" y="98" width="12" height="37" rx="5"/><rect x="181" y="90" width="14" height="53" rx="6"/><rect x="317" y="98" width="12" height="37" rx="5"/><rect x="299" y="90" width="14" height="53" rx="6"/></g>
+        <path d="M120 296c0-55 37-91 91-91h83l-30 31h-49c-30 0-50 19-50 60s20 60 50 60h45v-35h-59l27-29h73v92h-89c-54 0-92-35-92-88z" fill="url(#boot-platinum)"/>
+        <path d="M270 238l42 48 44-48 34 31v86c0 13-9 23-22 23h-28v-73l-28 31-42-47z" fill="url(#boot-platinum)"/>
+        <text x="256" y="409" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="6" fill="#dce2e7">GYM MANAGER</text>
+      </svg>
       <div class="boot-title">Gym <span>Manager</span></div><div class="boot-tag">Manage · Grow · Together</div>
       <div class="boot-status"><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-loading">Loading your gym manager</div><div class="boot-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>
       <div class="boot-credit">Powered by Atelier OG</div>
