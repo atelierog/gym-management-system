@@ -1,9 +1,9 @@
 import { supabase } from "./lib/supabase.js";
 
 /* Gym Manager — Owner Dashboard.
- * This is the single Owner dashboard presentation layer. It reads dashboard
- * metrics directly from Supabase and delegates navigation/actions to the
- * existing React handlers. It does not maintain a second dashboard state.
+ * Single Owner dashboard presentation layer. Metrics are read directly from
+ * Supabase. Actions are bound to the existing React handlers before the old
+ * dashboard DOM is replaced, so no action is silently disconnected.
  */
 
 const STYLE = `
@@ -11,6 +11,7 @@ const STYLE = `
 .gm-owner-hero{padding:4px 2px 18px}
 .gm-owner-greeting{margin:0 0 14px;font-size:27px;line-height:1.15;font-weight:800;letter-spacing:-.6px;color:#182230}
 .gm-owner-register{width:100%;min-height:50px;border:0;border-radius:14px;background:#182230;color:#fff;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 22px rgba(16,24,40,.12)}
+.gm-owner-register:disabled{opacity:.5;cursor:not-allowed}
 .gm-owner-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 22px}
 .gm-owner-stat{min-height:108px;border:1px solid #e4e7ec;border-radius:16px;background:#fff;padding:16px;display:flex;flex-direction:column;justify-content:center}
 .gm-owner-stat small{font-size:11px;color:#667085;font-weight:750;text-transform:uppercase;letter-spacing:.5px}
@@ -32,11 +33,8 @@ let mounted=false;
 let timer=null;
 
 function installStyle(){
-  if(document.getElementById("gm-owner-dashboard-style")) return;
-  const style=document.createElement("style");
-  style.id="gm-owner-dashboard-style";
-  style.textContent=STYLE;
-  document.head.appendChild(style);
+  if(document.getElementById("gm-owner-dashboard-style"))return;
+  const style=document.createElement("style");style.id="gm-owner-dashboard-style";style.textContent=STYLE;document.head.appendChild(style);
 }
 
 const text=el=>String(el?.textContent||"").replace(/\s+/g," ").trim();
@@ -59,78 +57,66 @@ async function ownerContext(){
 }
 
 async function loadMetrics(gymId){
+  const start=new Date();start.setHours(0,0,0,0);
   const [people,memberships,attendance]=await Promise.all([
-    supabase.from("profiles").select("role,status",{count:"exact",head:false}).eq("gym_id",gymId).in("role",["member","trainer"]),
-    supabase.from("memberships").select("amount_due,payment_status,status,expiry_date",{count:"exact",head:false}).eq("gym_id",gymId),
-    supabase.from("attendance").select("id",{count:"exact",head:false}).eq("gym_id",gymId).gte("check_in",new Date(new Date().setHours(0,0,0,0)).toISOString())
+    supabase.from("profiles").select("role,status").eq("gym_id",gymId).in("role",["member","trainer"]),
+    supabase.from("memberships").select("amount_due,payment_status,status,expiry_date").eq("gym_id",gymId),
+    supabase.from("attendance").select("id").eq("gym_id",gymId).gte("check_in",start.toISOString())
   ]);
   const errors=[people,memberships,attendance].map(x=>x.error).filter(Boolean);
   if(errors.length)throw errors[0];
-
   const rows=people.data||[];
   const members=rows.filter(x=>x.role==="member"&&String(x.status||"active").toLowerCase()!=="suspended").length;
   const trainers=rows.filter(x=>x.role==="trainer"&&String(x.status||"active").toLowerCase()!=="suspended").length;
   const attendanceToday=(attendance.data||[]).length;
   const outstanding=(memberships.data||[]).reduce((sum,row)=>sum+Number(row.amount_due||0),0);
   const expiring=(memberships.data||[]).filter(row=>{
-    if(String(row.status||"").toLowerCase()==="expired")return false;
-    if(!row.expiry_date)return false;
-    const d=new Date(`${row.expiry_date}T00:00:00`),now=new Date();
-    const days=(d-now)/86400000;
+    if(String(row.status||"").toLowerCase()==="expired"||!row.expiry_date)return false;
+    const days=(new Date(`${row.expiry_date}T00:00:00`)-new Date())/86400000;
     return days>=0&&days<=7;
   }).length;
   return {members,trainers,attendanceToday,outstanding,expiring};
 }
 
 function findExistingAction(labels){
-  const app=document.querySelector(".admin-app");
-  if(!app)return null;
+  const app=document.querySelector(".admin-app");if(!app)return null;
   const wanted=labels.map(x=>x.toLowerCase());
   return [...app.querySelectorAll("button,a,[role=button]")].find(el=>wanted.includes(text(el).toLowerCase()))||null;
 }
 
 function activeDashboard(){
-  const app=document.querySelector(".admin-app");
-  if(!app)return null;
-  const main=app.querySelector("main")||app.querySelector("[role=main]");
-  if(!main)return null;
-  const dashboardActive=[...app.querySelectorAll(".mobile-drawer .nav-item,.sidebar .nav-item,.sidebar-link,.nav-item")].some(el=>/dashboard/i.test(text(el))&&(el.classList.contains("active")||el.getAttribute("aria-current")==="page"));
-  if(dashboardActive)return main;
-  return null;
+  const app=document.querySelector(".admin-app");if(!app)return null;
+  const main=app.querySelector("main")||app.querySelector("[role=main]");if(!main)return null;
+  const active=[...app.querySelectorAll(".mobile-drawer .nav-item,.sidebar .nav-item,.sidebar-link,.nav-item")].some(el=>/dashboard/i.test(text(el))&&(el.classList.contains("active")||el.getAttribute("aria-current")==="page"));
+  return active?main:null;
 }
 
 function showError(wrap,error){
-  const box=document.createElement("div");
-  box.className="gm-owner-dashboard-error";
-  box.textContent="We couldn't load the dashboard data. Please try again or contact Atelier OG Support.";
-  wrap.prepend(box);
-  try{supabase.rpc("record_platform_error",{p_source:"gym_owner",p_operation:"dashboard_load",p_message:String(error?.message||error),p_error_code:"GM-OWNER-DASHBOARD",p_detail:String(error?.stack||"").slice(0,1800),p_path:window.location.pathname})}catch{}
+  const box=document.createElement("div");box.className="gm-owner-dashboard-error";box.textContent="We couldn't load the dashboard data. Please try again or contact Atelier OG Support.";wrap.prepend(box);
+  supabase.rpc("record_platform_error",{p_source:"gym_owner",p_operation:"dashboard_load",p_message:String(error?.message||error),p_error_code:"GM-OWNER-DASHBOARD",p_detail:String(error?.stack||"").slice(0,1800),p_path:window.location.pathname}).catch(()=>{});
 }
 
-function actionButton(label,labels){
-  const existing=findExistingAction(labels);
-  const button=document.createElement("button");
-  button.type="button";
-  button.className="gm-owner-action";
-  button.textContent=label;
-  if(!existing){
-    button.disabled=true;
-    button.title="This Owner Portal action is not connected to an existing application handler.";
-    button.addEventListener("click",()=>{throw new Error(`Owner dashboard action not connected: ${label}`)});
-  }else{
-    button.addEventListener("click",()=>existing.click());
-  }
+function actionButton(label,existing){
+  const button=document.createElement("button");button.type="button";button.className="gm-owner-action";button.textContent=label;
+  if(!existing){button.disabled=true;button.title="This Owner Portal action is not connected to an application handler.";return button;}
+  button.addEventListener("click",()=>existing.click());
   return button;
 }
 
 async function mount(main){
   if(mounted||!main)return;
-  mounted=true;
-  installStyle();
-  const wrap=document.createElement("div");
-  wrap.className="gm-owner-dashboard";
-  main.innerHTML="";
-  main.appendChild(wrap);
+  mounted=true;installStyle();
+
+  // Capture the real React action handlers BEFORE replacing the legacy dashboard DOM.
+  const handlers={
+    register:findExistingAction(["Register member","+ Register member"]),
+    attendance:findExistingAction(["Attendance"]),
+    members:findExistingAction(["Members"]),
+    trainers:findExistingAction(["Trainers"])
+  };
+
+  const wrap=document.createElement("div");wrap.className="gm-owner-dashboard";
+  main.innerHTML="";main.appendChild(wrap);
 
   let ctx;
   try{ctx=await ownerContext()}catch(error){showError(wrap,error);return}
@@ -138,54 +124,35 @@ async function mount(main){
   const hero=document.createElement("section");hero.className="gm-owner-hero";
   const h1=document.createElement("h1");h1.className="gm-owner-greeting";
   const name=ctx.profile.full_name||ctx.profile.display_name||ctx.profile.name||"there";
-  const updateGreeting=()=>{h1.textContent=`${greeting()}, ${name}`};
-  updateGreeting();
+  const updateGreeting=()=>{h1.textContent=`${greeting()}, ${name}`};updateGreeting();
   const register=document.createElement("button");register.type="button";register.className="gm-owner-register";register.textContent="+ Register member";
-  const registerTarget=findExistingAction(["Register member","+ Register member"]);
-  if(registerTarget)register.addEventListener("click",()=>registerTarget.click());else{register.disabled=true;register.title="Register Member handler is not available"}
+  if(handlers.register)register.addEventListener("click",()=>handlers.register.click());else register.disabled=true;
   hero.append(h1,register);wrap.appendChild(hero);
 
   try{
     const metrics=await loadMetrics(ctx.gymId);
     const stats=document.createElement("section");stats.className="gm-owner-stats";
-    [["Members",metrics.members,"Active"],["Attendance",metrics.attendanceToday,"Today"],["Trainers",metrics.trainers,"Active"],["Outstanding","₹"+metrics.outstanding.toLocaleString("en-IN",{maximumFractionDigits:0}),"Payment dues"]].forEach(([label,value,sub])=>{const card=document.createElement("article");card.className="gm-owner-stat";card.innerHTML=`<small>${label}</small><strong>${value}</strong><span>${sub}</span>`;stats.appendChild(card)});
-    wrap.appendChild(stats);
+    [["Members",metrics.members,"Active"],["Attendance",metrics.attendanceToday,"Today"],["Trainers",metrics.trainers,"Active"],["Outstanding","₹"+metrics.outstanding.toLocaleString("en-IN",{maximumFractionDigits:0}),"Payment dues"]].forEach(([label,value,sub])=>{const card=document.createElement("article");card.className="gm-owner-stat";card.innerHTML=`<small>${label}</small><strong>${value}</strong><span>${sub}</span>`;stats.appendChild(card)});wrap.appendChild(stats);
 
     const title=document.createElement("div");title.className="gm-owner-section-title";title.textContent="Quick actions";wrap.appendChild(title);
     const actions=document.createElement("section");actions.className="gm-owner-actions";
-    actions.append(actionButton("+ Register member",["Register member","+ Register member"]),actionButton("✓ Attendance",["Attendance"]),actionButton("Members",["Members"]),actionButton("Trainers",["Trainers"]));
-    wrap.appendChild(actions);
+    actions.append(actionButton("+ Register member",handlers.register),actionButton("✓ Attendance",handlers.attendance),actionButton("Members",handlers.members),actionButton("Trainers",handlers.trainers));wrap.appendChild(actions);
 
     const attentionTitle=document.createElement("div");attentionTitle.className="gm-owner-section-title";attentionTitle.textContent="Needs attention";wrap.appendChild(attentionTitle);
     const attention=document.createElement("section");attention.className="gm-owner-attention";
-    if(metrics.expiring>0){attention.classList.add("has-items");attention.textContent=`${metrics.expiring} membership${metrics.expiring===1?"":"s"} expire within 7 days.`}else if(metrics.outstanding>0){attention.classList.add("has-items");attention.textContent=`₹${metrics.outstanding.toLocaleString("en-IN",{maximumFractionDigits:0})} in payment dues.`}else{attention.textContent="Nothing needs your attention."}
+    if(metrics.expiring>0){attention.classList.add("has-items");attention.textContent=`${metrics.expiring} membership${metrics.expiring===1?"":"s"} expire within 7 days.`}else if(metrics.outstanding>0){attention.classList.add("has-items");attention.textContent=`₹${metrics.outstanding.toLocaleString("en-IN",{maximumFractionDigits:0})} in payment dues.`}else attention.textContent="Nothing needs your attention.";
     wrap.appendChild(attention);
   }catch(error){showError(wrap,error)}
 
   const support=document.createElement("div");support.className="gm-owner-support";support.innerHTML='Need help?<br><a href="mailto:atelierog.co@gmail.com?subject=Gym%20Manager%20Support">Contact Atelier OG</a><br><span>atelierog.co@gmail.com</span>';wrap.appendChild(support);
-
   timer=setInterval(updateGreeting,60000);
 }
 
 function removeOwnerOnlyNavigation(){
-  const app=document.querySelector(".admin-app");
-  if(!app)return;
-  [...app.querySelectorAll(".mobile-drawer .nav-item,.sidebar .nav-item,.sidebar-link,.nav-item")].forEach(item=>{
-    const label=text(item);
-    if(/^reports$/i.test(label)||/^activity(?: log)?$/i.test(label))item.remove();
-  });
+  const app=document.querySelector(".admin-app");if(!app)return;
+  [...app.querySelectorAll(".mobile-drawer .nav-item,.sidebar .nav-item,.sidebar-link,.nav-item")].forEach(item=>{const label=text(item);if(/^reports$/i.test(label)||/^activity(?: log)?$/i.test(label))item.remove()});
 }
 
-function run(){
-  removeOwnerOnlyNavigation();
-  const main=activeDashboard();
-  if(main&&!main.dataset.gmOwnerDashboardMounted) {
-    main.dataset.gmOwnerDashboardMounted="true";
-    mount(main);
-  }
-}
+function run(){removeOwnerOnlyNavigation();const main=activeDashboard();if(main&&!main.dataset.gmOwnerDashboardMounted){main.dataset.gmOwnerDashboardMounted="true";mount(main)}}
 
-const observer=new MutationObserver(()=>{clearTimeout(run._t);run._t=setTimeout(run,80)});
-observer.observe(document.documentElement,{childList:true,subtree:true});
-setTimeout(run,250);
-window.addEventListener("beforeunload",()=>{if(timer)clearInterval(timer);observer.disconnect()});
+const observer=new MutationObserver(()=>{clearTimeout(run._t);run._t=setTimeout(run,80)});observer.observe(document.documentElement,{childList:true,subtree:true});setTimeout(run,250);window.addEventListener("beforeunload",()=>{if(timer)clearInterval(timer);observer.disconnect()});
