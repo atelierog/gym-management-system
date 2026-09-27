@@ -71,7 +71,7 @@ export default function Login({onLogin}){
   </header>
 
   <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <div className="gm-login-logo-wrap"><img src="/icon.svg?v=9" alt="Gym Manager" className="gm-login-logo"/></div>
+   <div className="gm-login-logo-wrap" aria-hidden="true"><div className="gm-login-logo-mark"><span>GM</span></div></div>
    <h1 className="gm-login-title">Gym Manager</h1>
 
    <form onSubmit={submit} className="gm-login-card">
