@@ -23,18 +23,13 @@ export default function Login({onLogin}){
  },[]);
 
  async function reportLoginError(message,code="LOGIN_ERROR"){
-  try{
-   await supabase?.rpc("record_platform_error",{
-    p_source:"login",p_operation:"sign_in",p_message:String(message||"Login error"),
-    p_error_code:code,p_path:window.location.pathname
-   });
-  }catch{}
+  try{await supabase?.rpc("record_platform_error",{p_source:"login",p_operation:"sign_in",p_message:String(message||"Login error"),p_error_code:code,p_path:window.location.pathname})}catch{}
  }
 
  async function submit(e){
   e.preventDefault();
   setError("");setNotice("");
-  if(!supabase){setError("Supabase is not configured yet.");return}
+  if(!supabase){setError("Secure sign-in is not configured yet.");return}
   if(!id.trim()||!password){
    const msg="Enter your Login ID and password.";
    setError(msg);reportLoginError(msg,"VALIDATION_ERROR");return;
@@ -50,10 +45,7 @@ export default function Login({onLogin}){
   }catch(err){
    setBusy(false);
    const raw=String(err?.message||"");
-   const msg=raw==="This gym has been suspended."?raw:
-    raw==="This account is inactive. Contact your Gym Admin."?raw:
-    raw==="Your Gym Manager profile could not be found."?raw:
-    "Invalid Login ID or password.";
+   const msg=["This gym has been suspended.","This account is inactive. Contact your Gym Admin.","Your Gym Manager profile could not be found."].includes(raw)?raw:"Invalid Login ID or password.";
    setError(msg);
    reportLoginError(msg,"AUTHENTICATION");
   }
@@ -61,41 +53,34 @@ export default function Login({onLogin}){
 
  function forgotPassword(){
   setError("");
-  setNotice(`Password recovery will be handled on the next secure screen. If you need immediate help, contact ${SUPPORT_EMAIL}.`);
+  setNotice(`Password recovery will open on the secure recovery screen. For immediate help, contact ${SUPPORT_EMAIL}.`);
  }
 
  return <main className="gm-login-shell">
-  <div className="gm-gym-bg" aria-hidden="true">
-   <div className="gm-bg-light gm-bg-light-one"/>
-   <div className="gm-bg-light gm-bg-light-two"/>
-   <div className="gm-bg-rack gm-bg-rack-one"/>
-   <div className="gm-bg-rack gm-bg-rack-two"/>
-   <div className="gm-bg-weight gm-bg-weight-one">20KG</div>
-   <div className="gm-bg-floor"/>
-   <div className="gm-bg-motto">DISCIPLINE<br/>BUILDS<br/>FREEDOM</div>
+  <div className="gm-login-background" aria-hidden="true">
+   <div className="gm-bg-glow gm-bg-glow-one"/><div className="gm-bg-glow gm-bg-glow-two"/>
+   <div className="gm-bg-rack gm-bg-rack-left"><i/><i/><i/></div>
+   <div className="gm-bg-rack gm-bg-rack-right"><i/><i/><i/></div>
+   <div className="gm-bg-bench"/><div className="gm-bg-floor"/>
+   <div className="gm-bg-arc"/><div className="gm-bg-line"/>
   </div>
 
-  <div className="gm-login-brand">
+  <header className="gm-login-brand">
    <div className="gm-aog-mark">AOG</div>
-   <div><b>ATELIER OG</b><span>Business systems &amp; automation</span></div>
-  </div>
+   <div><strong>ATELIER OG</strong><span>Business systems &amp; automation</span></div>
+  </header>
 
   <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <div className="gm-login-logo-wrap">
-    <img src="/icon.svg?v=8" alt="Gym Manager" className="gm-login-logo"/>
-   </div>
+   <div className="gm-login-logo-wrap"><img src="/icon.svg?v=9" alt="Gym Manager" className="gm-login-logo"/></div>
    <h1 className="gm-login-title">Gym Manager</h1>
 
    <form onSubmit={submit} className="gm-login-card">
-    <div className="gm-login-heading">
-     <h2>Welcome to Gym Manager</h2>
-     <p>Sign in to access your account</p>
-    </div>
+    <div className="gm-login-heading"><h2>Welcome to Gym Manager</h2><p>Sign in to access your account</p></div>
 
     <label className="gm-field-label">Login ID
      <div className="gm-input-wrap">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m3 7 9 7 9-7"/></svg>
-      <input value={id} onChange={e=>setId(e.target.value)} placeholder="Email / Login ID" autoComplete="username"/>
+      <input value={id} onChange={e=>setId(e.target.value)} placeholder="Email / Login ID" autoComplete="username" inputMode="email"/>
      </div>
     </label>
 
