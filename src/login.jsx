@@ -23,15 +23,13 @@ export default function Login({onLogin}){
    if(saved?.id){setId(saved.id);setRemember(true)}
   }catch{}
 
-  // The app is deployed under /gym-manager/. Absolute root paths such as
-  // /icon.svg and /login-reference.webp.b64 bypass that deployment prefix.
-  // Always resolve static login assets from Vite's configured base URL.
-  fetch(`${BASE_URL}login-reference.webp.b64?v=3`,{cache:"no-store"})
-   .then(r=>r.ok?r.text():Promise.reject(new Error(`reference asset ${r.status}`)))
-   .then(raw=>{
-    const clean=raw.trim();
-    if(!clean.startsWith("UklGR")) throw new Error("Invalid WebP reference asset");
-    setReferenceBg(`url("data:image/webp;base64,${clean}")`);
+  // Use the actual login design asset, resolved through the app base path.
+  fetch(`${BASE_URL}login-reference.webp?v=4`,{cache:"no-store"})
+   .then(r=>r.ok?r.blob():Promise.reject(new Error(`reference asset ${r.status}`)))
+   .then(blob=>{
+    const url=URL.createObjectURL(blob);
+    setReferenceBg(`url("${url}")`);
+    return ()=>URL.revokeObjectURL(url);
    })
    .catch(()=>setReferenceBg(""));
  },[]);
