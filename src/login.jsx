@@ -5,6 +5,7 @@ import "./login.css";
 
 const REMEMBER_KEY="gym_manager_remembered_login_v1";
 const SUPPORT_EMAIL="atelierog.co@gmail.com";
+const BASE_URL=import.meta.env.BASE_URL || "/";
 
 export default function Login({onLogin}){
  const [id,setId]=useState("");
@@ -21,10 +22,18 @@ export default function Login({onLogin}){
    const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");
    if(saved?.id){setId(saved.id);setRemember(true)}
   }catch{}
-  fetch("/login-reference.webp.b64",{cache:"force-cache"})
-   .then(r=>r.ok?r.text():Promise.reject(new Error("reference unavailable")))
-   .then(raw=>setReferenceBg(`url("data:image/webp;base64,${raw.trim()}")`))
-   .catch(()=>{});
+
+  // The app is deployed under /gym-manager/. Absolute root paths such as
+  // /icon.svg and /login-reference.webp.b64 bypass that deployment prefix.
+  // Always resolve static login assets from Vite's configured base URL.
+  fetch(`${BASE_URL}login-reference.webp.b64?v=3`,{cache:"no-store"})
+   .then(r=>r.ok?r.text():Promise.reject(new Error(`reference asset ${r.status}`)))
+   .then(raw=>{
+    const clean=raw.trim();
+    if(!clean.startsWith("UklGR")) throw new Error("Invalid WebP reference asset");
+    setReferenceBg(`url("data:image/webp;base64,${clean}")`);
+   })
+   .catch(()=>setReferenceBg(""));
  },[]);
 
  async function reportLoginError(message,code="LOGIN_ERROR"){
@@ -76,7 +85,7 @@ export default function Login({onLogin}){
   </header>
 
   <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <div className="gm-login-logo-wrap"><img className="gm-login-logo-image" src="/icon.svg" alt="Gym Manager"/></div>
+   <div className="gm-login-logo-wrap"><img className="gm-login-logo-image" src={`${BASE_URL}icon.svg`} alt="Gym Manager"/></div>
    <h1 className="gm-login-title">Gym Manager</h1>
 
    <form onSubmit={submit} className="gm-login-card">
