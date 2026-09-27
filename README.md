@@ -35,9 +35,13 @@ The current model is documented in `supabase/schema.sql`. Production hardening c
 Production frontend:
 `https://gym-management-system.atelierog-co.workers.dev/`
 
-
 ## Foundation
 The production architecture is documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Security-sensitive operations are server-authoritative, and membership/payment workflows use database transactions.
 
+## Product case study
+A recruiter-facing product case study is available at [docs/CODEROUND_APM_AI_CASE_STUDY.md](docs/CODEROUND_APM_AI_CASE_STUDY.md).
+
+## Profile pack
+A recruiter-facing profile summary is available at [docs/RAHUL_KUMAR_GITHUB_PROFILE_PACK.md](docs/RAHUL_KUMAR_GITHUB_PROFILE_PACK.md).
 
 See ARCHITECTURE.md for the final V1 product boundary, role model, security model, transaction boundaries, and deployment architecture.
