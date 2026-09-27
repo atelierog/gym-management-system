@@ -61,7 +61,7 @@ export default function Login({onLogin}){
   setNotice(`Password recovery will open on the secure recovery screen. For immediate help, contact ${SUPPORT_EMAIL}.`);
  }
 
- return <main className="gm-login-shell" style={referenceBg?{backgroundImage:referenceBg}:undefined}>
+ return <main className={`gm-login-shell${referenceBg?" gm-reference-mode":""}`} style={referenceBg?{backgroundImage:referenceBg}:undefined}>
   <div className="gm-login-background" aria-hidden="true">
    {!referenceBg&&<><div className="gm-bg-glow gm-bg-glow-one"/><div className="gm-bg-glow gm-bg-glow-two"/>
    <div className="gm-bg-rack gm-bg-rack-left"><i/><i/><i/></div>
