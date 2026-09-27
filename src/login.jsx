@@ -14,12 +14,17 @@ export default function Login({onLogin}){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const [notice,setNotice]=useState("");
+ const [referenceBg,setReferenceBg]=useState("");
 
  useEffect(()=>{
   try{
    const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");
    if(saved?.id){setId(saved.id);setRemember(true)}
   }catch{}
+  fetch("/login-reference.webp.b64",{cache:"force-cache"})
+   .then(r=>r.ok?r.text():Promise.reject(new Error("reference unavailable")))
+   .then(raw=>setReferenceBg(`url("data:image/webp;base64,${raw.trim()}")`))
+   .catch(()=>{});
  },[]);
 
  async function reportLoginError(message,code="LOGIN_ERROR"){
@@ -56,13 +61,13 @@ export default function Login({onLogin}){
   setNotice(`Password recovery will open on the secure recovery screen. For immediate help, contact ${SUPPORT_EMAIL}.`);
  }
 
- return <main className="gm-login-shell">
+ return <main className="gm-login-shell" style={referenceBg?{backgroundImage:referenceBg}:undefined}>
   <div className="gm-login-background" aria-hidden="true">
-   <div className="gm-bg-glow gm-bg-glow-one"/><div className="gm-bg-glow gm-bg-glow-two"/>
+   {!referenceBg&&<><div className="gm-bg-glow gm-bg-glow-one"/><div className="gm-bg-glow gm-bg-glow-two"/>
    <div className="gm-bg-rack gm-bg-rack-left"><i/><i/><i/></div>
    <div className="gm-bg-rack gm-bg-rack-right"><i/><i/><i/></div>
    <div className="gm-bg-bench"/><div className="gm-bg-floor"/>
-   <div className="gm-bg-arc"/><div className="gm-bg-line"/>
+   <div className="gm-bg-arc gm-bg-arc-fallback"/><div className="gm-bg-line"/></>}
   </div>
 
   <header className="gm-login-brand">
