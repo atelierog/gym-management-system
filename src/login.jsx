@@ -23,15 +23,24 @@ export default function Login({onLogin}){
    if(saved?.id){setId(saved.id);setRemember(true)}
   }catch{}
 
-  // Use the actual login design asset, resolved through the app base path.
-  fetch(`${BASE_URL}login-reference.webp?v=4`,{cache:"no-store"})
-   .then(r=>r.ok?r.blob():Promise.reject(new Error(`reference asset ${r.status}`)))
-   .then(blob=>{
-    const url=URL.createObjectURL(blob);
-    setReferenceBg(`url("${url}")`);
-    return ()=>URL.revokeObjectURL(url);
+  // The approved login artwork is stored as base64 text because GitHub's
+  // contents API cannot safely write the original binary WebP. Decode it in
+  // the browser and use the resulting image as the real page background.
+  let objectUrl="";
+  fetch(`${BASE_URL}login-reference.webp.b64?v=5`,{cache:"no-store"})
+   .then(r=>r.ok?r.text():Promise.reject(new Error(`reference asset ${r.status}`)))
+   .then(raw=>{
+    const clean=raw.replace(/\s+/g,"");
+    const binary=atob(clean);
+    const bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+    const blob=new Blob([bytes],{type:"image/webp"});
+    objectUrl=URL.createObjectURL(blob);
+    setReferenceBg(`url("${objectUrl}")`);
    })
    .catch(()=>setReferenceBg(""));
+
+  return ()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)};
  },[]);
 
  async function reportLoginError(message,code="LOGIN_ERROR"){
@@ -69,25 +78,14 @@ export default function Login({onLogin}){
  }
 
  return <main className={`gm-login-shell${referenceBg?" gm-reference-mode":""}`} style={referenceBg?{backgroundImage:referenceBg}:undefined}>
-  <div className="gm-login-background" aria-hidden="true">
-   {!referenceBg&&<><div className="gm-bg-glow gm-bg-glow-one"/><div className="gm-bg-glow gm-bg-glow-two"/>
-   <div className="gm-bg-rack gm-bg-rack-left"><i/><i/><i/></div>
-   <div className="gm-bg-rack gm-bg-rack-right"><i/><i/><i/></div>
-   <div className="gm-bg-bench"/><div className="gm-bg-floor"/>
-   <div className="gm-bg-arc gm-bg-arc-fallback"/><div className="gm-bg-line"/></>}
-  </div>
-
-  <header className="gm-login-brand">
-   <div className="gm-aog-mark">AOG</div>
-   <div><strong>ATELIER OG</strong><span>Business systems &amp; automation</span></div>
-  </header>
+  <header className="gm-login-brand" aria-hidden="true"/>
 
   <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <div className="gm-login-logo-wrap"><img className="gm-login-logo-image" src={`${BASE_URL}icon.svg`} alt="Gym Manager"/></div>
-   <h1 className="gm-login-title">Gym Manager</h1>
+   <div className="gm-login-logo-wrap" aria-hidden="true"/>
+   <h1 className="gm-login-title" aria-hidden="true">Gym Manager</h1>
 
    <form onSubmit={submit} className="gm-login-card">
-    <div className="gm-login-heading"><h2>Welcome to Gym Manager</h2><p>Sign in to access your account</p></div>
+    <div className="gm-login-heading" aria-hidden="true"><h2>Welcome to Gym Manager</h2><p>Sign in to access your account</p></div>
 
     <label className="gm-field-label">Login ID
      <div className="gm-input-wrap">
