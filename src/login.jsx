@@ -6,6 +6,24 @@ import "./login.css";
 const REMEMBER_KEY="gym_manager_remembered_login_v1";
 const SUPPORT_EMAIL="atelierog.co@gmail.com";
 
+function GymManagerLogo(){
+ return <svg className="gm-login-logo" viewBox="0 0 512 512" role="img" aria-label="Gym Manager logo">
+  <defs>
+   <linearGradient id="gm-platinum" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff"/><stop offset=".2" stopColor="#e9edf1"/><stop offset=".5" stopColor="#b8c0c8"/><stop offset=".78" stopColor="#f8fafc"/><stop offset="1" stopColor="#7d8792"/></linearGradient>
+   <filter id="gm-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+   <filter id="gm-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#070a0e"/>
+  <rect x="22" y="22" width="468" height="468" rx="101" fill="none" stroke="#c5ccd3" strokeWidth="16" opacity=".18" filter="url(#gm-soft)"/>
+  <rect x="27" y="27" width="458" height="458" rx="96" fill="#0d1117" stroke="url(#gm-platinum)" strokeWidth="13" filter="url(#gm-glow)"/>
+  <rect x="43" y="43" width="426" height="426" rx="82" fill="#0b0f14" stroke="#eef2f5" strokeOpacity=".45" strokeWidth="2"/>
+  <g transform="translate(-38 -34) scale(1.15)" fill="url(#gm-platinum)" filter="url(#gm-glow)">
+   <path d="M120 296c0-55 37-91 91-91h83l-30 31h-49c-30 0-50 19-50 60s20 60 50 60h45v-35h-59l27-29h73v92h-89c-54 0-92-35-92-88z"/>
+   <path d="M270 238l42 48 44-48 34 31v86c0 13-9 23-22 23h-28v-73l-28 31-42-47z"/>
+  </g>
+ </svg>;
+}
+
 export default function Login({onLogin}){
  const [id,setId]=useState("");
  const [password,setPassword]=useState("");
@@ -54,11 +72,7 @@ export default function Login({onLogin}){
  }
 
  return <main className="gm-login-shell">
-  <div className="gm-login-scene" aria-hidden="true">
-   <div className="gm-arc"/><div className="gm-light gm-light-a"/><div className="gm-light gm-light-b"/>
-   <div className="gm-rack gm-rack-left"><i/><i/><i/></div><div className="gm-rack gm-rack-right"><i/><i/><i/></div>
-   <div className="gm-bench"/><div className="gm-floor"/>
-  </div>
+  <div className="gm-login-scene" aria-hidden="true"><div className="gm-arc"/><div className="gm-light gm-light-a"/><div className="gm-light gm-light-b"/><div className="gm-rack gm-rack-left"><i/><i/><i/></div><div className="gm-rack gm-rack-right"><i/><i/><i/></div><div className="gm-bench"/><div className="gm-floor"/></div>
 
   <header className="gm-login-brand">
    <div className="gm-aog-mark">AOG</div>
@@ -66,7 +80,7 @@ export default function Login({onLogin}){
   </header>
 
   <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <img className="gm-login-logo" src="/icon.svg" alt="Gym Manager" fetchPriority="high"/>
+   <GymManagerLogo/>
    <h1>Gym Manager</h1>
 
    <form onSubmit={submit} className="gm-login-card">
