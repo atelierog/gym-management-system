@@ -1,15 +1,39 @@
+<div align="center">
+
+![Gym Manager](docs/assets/gym-manager-hero.svg)
+
 # Gym Manager
 
 ### Mobile-first multi-tenant SaaS for everyday gym operations
 
 **Gym Manager** is a product being developed under **Atelier OG / Business OS** to bring memberships, attendance, payments, dues and renewals into one focused system for independent gyms.
 
-> **Product case study:** [Read the recruiter-facing case study](docs/CODEROUND_APM_AI_CASE_STUDY.md)  
-> **Architecture:** [Read the technical architecture](docs/ARCHITECTURE.md)
+[![Product Case Study](https://img.shields.io/badge/Product%20Case%20Study-Read-7C3AED?style=for-the-badge)](docs/CODEROUND_APM_AI_CASE_STUDY.md)
+[![Architecture](https://img.shields.io/badge/Architecture-Read-0EA5E9?style=for-the-badge)](docs/ARCHITECTURE.md)
+[![Live Build](https://img.shields.io/badge/Live%20Build-Open-111827?style=for-the-badge)](https://gym-management-system.atelierog-co.workers.dev/)
+
+</div>
 
 ---
 
-## The product problem
+## Product snapshot
+
+| | |
+|---|---|
+| **Product** | Gym Manager |
+| **Type** | Mobile-first, multi-tenant SaaS |
+| **Builder** | Rahul Kumar · Atelier OG / Business OS |
+| **Frontend** | React + Vite · Android PWA model |
+| **Backend** | Supabase + PostgreSQL |
+| **Security** | PostgreSQL RLS + grants + server-authoritative rules |
+| **Hosting** | Cloudflare Workers / Pages |
+| **Status** | V1 architecture and product boundary defined; implementation and hardening ongoing |
+
+> This repository is presented as a **product case study and working software project**, not as a claim that the V1 is already production-ready.
+
+---
+
+## The problem
 
 Small gyms often manage critical daily operations across paper records and spreadsheets. That creates friction around questions such as:
 
@@ -23,7 +47,7 @@ Gym Manager is designed around those operational jobs instead of trying to becom
 
 ---
 
-## What I am building
+## What is being built
 
 | Area | V1 capability |
 |---|---|
@@ -37,9 +61,10 @@ Gym Manager is designed around those operational jobs instead of trying to becom
 | **Administration** | Gym settings, audit trail and role-based portals |
 
 ### Intentionally outside V1
+
 Classes, POS, inventory, CRM, payroll, marketing automation, multi-branch scheduling and other enterprise surfaces are deliberately excluded from the first release.
 
-The product boundary is a product decision: **solve the core front-desk workflow before expanding the surface area.**
+**Product boundary:** solve the core front-desk workflow before expanding the surface area.
 
 ---
 
@@ -58,6 +83,22 @@ Key decisions include:
 5. Make money-changing membership workflows transactional.
 6. Validate attendance on the server, including membership, role/status, location/radius, timezone, Sunday closure and duplicate-open-visit rules.
 7. Add future functionality when it replaces a real manual task.
+
+---
+
+## Core workflow
+
+```mermaid
+flowchart LR
+    A[Gym onboarding] --> B[Members & trainers]
+    B --> C[Memberships]
+    C --> D[Payments & dues]
+    B --> E[Attendance]
+    D --> F[Reports]
+    E --> F
+    C --> G[Expiry reminders]
+    F --> H[Admin decisions]
+```
 
 ---
 
@@ -122,7 +163,7 @@ Examples of server-authoritative rules include:
 - Sunday closure
 - payment and membership transaction boundaries
 
-This is intentionally designed so that a successful frontend build is **not** treated as proof that the product is production-ready.
+A successful frontend build is therefore **not** treated as proof that the product is production-ready.
 
 ---
 
@@ -144,7 +185,7 @@ The detailed permission model is documented in [ARCHITECTURE.md](docs/ARCHITECTU
 
 ---
 
-## A product decision I am exploring with AI
+## AI product experiment
 
 A potential next experiment is an **operations copilot** that can summarize expiring memberships and outstanding dues, cite the underlying records, and propose safe outreach actions.
 
@@ -155,7 +196,7 @@ The feature would be validated against:
 - action safety
 - time saved for gym staff
 
-The goal is not to add AI because it is fashionable; it is to test whether AI can remove a real operational task without weakening trust or control.
+The goal is to test whether AI can remove a real operational task without weakening trust or control.
 
 ---
 
@@ -175,18 +216,21 @@ It combines product thinking with direct implementation, which is the kind of cr
 
 The repository includes the product foundation, database source of truth, security model, migrations and recruiter-facing case study.
 
-Production frontend:
+### Live build
 
-`https://gym-management-system.atelierog-co.workers.dev/`
+**https://gym-management-system.atelierog-co.workers.dev/**
+
+Use the live build as a product preview; refer to the repository documentation for the current implementation boundary and release gates.
 
 ---
 
 ## Documentation
 
-- [Product Case Study](docs/CODEROUND_APM_AI_CASE_STUDY.md)
-- [Architecture & Security](docs/ARCHITECTURE.md)
-- [Database Schema](supabase/schema.sql)
-- [Migrations](supabase/migrations/)
+- **[Product Case Study](docs/CODEROUND_APM_AI_CASE_STUDY.md)** — product problem, decisions, MVP and AI experiment
+- **[Architecture & Security](docs/ARCHITECTURE.md)** — tenant isolation, roles, transactions and release gates
+- **[Database Schema](supabase/schema.sql)** — database source of truth
+- **[Migrations](supabase/migrations/)** — production schema change path
+- **[GitHub Profile Pack](docs/RAHUL_KUMAR_GITHUB_PROFILE_PACK.md)** — recruiter-facing profile material
 
 ---
 
@@ -198,3 +242,11 @@ BCA, Arka Jain University
 Retail Gemologist, Tanishq
 
 This project is part of my broader work under **Atelier OG / Business OS**, where I build practical digital products and business systems.
+
+---
+
+<div align="center">
+
+**Building practical software from problem discovery to implementation.**
+
+</div>
