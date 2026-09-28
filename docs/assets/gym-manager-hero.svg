@@ -1,0 +1,53 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="520" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#0B1020"/>
+    <stop offset="0.55" stop-color="#111827"/>
+    <stop offset="1" stop-color="#172554"/>
+  </linearGradient>
+  <linearGradient id="accent" x1="90" y1="80" x2="1480" y2="430" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#A78BFA"/>
+    <stop offset="1" stop-color="#38BDF8"/>
+  </linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000000" flood-opacity="0.28"/>
+  </filter>
+</defs>
+<rect width="1600" height="520" rx="32" fill="url(#bg)"/>
+<circle cx="1430" cy="90" r="190" fill="#7C3AED" fill-opacity="0.12"/>
+<circle cx="1510" cy="410" r="260" fill="#0EA5E9" fill-opacity="0.08"/>
+<path d="M0 438C290 330 420 505 690 406C950 310 1070 445 1600 310" stroke="url(#accent)" stroke-opacity="0.22" stroke-width="2"/>
+
+<g filter="url(#shadow)">
+  <rect x="1030" y="72" width="440" height="350" rx="24" fill="#0F172A" stroke="#334155"/>
+  <rect x="1060" y="104" width="170" height="12" rx="6" fill="#334155"/>
+  <rect x="1060" y="144" width="380" height="92" rx="16" fill="#111827" stroke="#1E293B"/>
+  <rect x="1080" y="166" width="84" height="12" rx="6" fill="#A78BFA"/>
+  <rect x="1080" y="192" width="132" height="9" rx="4.5" fill="#475569"/>
+  <rect x="1240" y="164" width="76" height="48" rx="12" fill="#172554"/>
+  <rect x="1332" y="164" width="76" height="48" rx="12" fill="#0C4A6E"/>
+  <rect x="1060" y="256" width="180" height="132" rx="16" fill="#111827" stroke="#1E293B"/>
+  <rect x="1260" y="256" width="180" height="132" rx="16" fill="#111827" stroke="#1E293B"/>
+  <path d="M1082 358L1110 334L1136 344L1170 304L1208 324" stroke="#A78BFA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1128" cy="300" r="10" fill="#38BDF8"/>
+  <circle cx="1208" cy="324" r="10" fill="#A78BFA"/>
+  <rect x="1282" y="282" width="132" height="12" rx="6" fill="#334155"/>
+  <rect x="1282" y="312" width="100" height="10" rx="5" fill="#475569"/>
+  <rect x="1282" y="342" width="116" height="10" rx="5" fill="#475569"/>
+</g>
+
+<text x="92" y="148" fill="#94A3B8" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="3">ATELIER OG • BUSINESS OS</text>
+<text x="92" y="224" fill="white" font-family="Inter,Arial,sans-serif" font-size="72" font-weight="800">Gym Manager</text>
+<text x="92" y="270" fill="#CBD5E1" font-family="Inter,Arial,sans-serif" font-size="27" font-weight="500">Mobile-first multi-tenant SaaS for everyday gym operations</text>
+
+<g>
+  <rect x="92" y="326" width="152" height="46" rx="23" fill="#7C3AED" fill-opacity="0.18" stroke="#A78BFA" stroke-opacity="0.55"/>
+  <text x="168" y="356" text-anchor="middle" fill="#DDD6FE" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700">PRODUCT BUILD</text>
+  <rect x="258" y="326" width="142" height="46" rx="23" fill="#0EA5E9" fill-opacity="0.14" stroke="#38BDF8" stroke-opacity="0.45"/>
+  <text x="329" y="356" text-anchor="middle" fill="#BAE6FD" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700">REACT + PWA</text>
+  <rect x="414" y="326" width="148" height="46" rx="23" fill="#334155" fill-opacity="0.35" stroke="#64748B" stroke-opacity="0.55"/>
+  <text x="488" y="356" text-anchor="middle" fill="#E2E8F0" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700">SUPABASE</text>
+</g>
+
+<text x="92" y="428" fill="#94A3B8" font-family="Inter,Arial,sans-serif" font-size="20">Memberships • Attendance • Payments • Dues • Reports • Role-based access</text>
+</svg>
