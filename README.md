@@ -33,6 +33,14 @@
 
 ---
 
+## Product preview
+
+**Live build:** https://gym-management-system.atelierog-co.workers.dev/
+
+The repository is intentionally documented like a product case study: problem → users → MVP boundary → workflows → architecture → security → AI experiment → validation.
+
+---
+
 ## The problem
 
 Small gyms often manage critical daily operations across paper records and spreadsheets. That creates friction around questions such as:
@@ -215,12 +223,6 @@ It combines product thinking with direct implementation, which is the kind of cr
 **V1 architecture and product boundary are defined, with implementation and hardening work ongoing.**
 
 The repository includes the product foundation, database source of truth, security model, migrations and recruiter-facing case study.
-
-### Live build
-
-**https://gym-management-system.atelierog-co.workers.dev/**
-
-Use the live build as a product preview; refer to the repository documentation for the current implementation boundary and release gates.
 
 ---
 
