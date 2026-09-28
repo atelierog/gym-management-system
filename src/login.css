@@ -67,4 +67,30 @@
  .gm-login-footer{font-size:11.5px}
 }
 
+/* FINAL MOBILE MICRO-CORRECTIONS ONLY. No desktop changes. */
+@media(max-width:767px){
+ .gm-login-logo>rect:nth-of-type(1),
+ .gm-login-logo>rect:nth-of-type(2),
+ .gm-login-logo>rect:nth-of-type(3){
+  transform-box:fill-box;
+  transform-origin:center;
+  transform:scale(.94);
+ }
+ .gm-remember input:checked:after{
+  content:"";
+  inset:auto;
+  width:10px;
+  height:6px;
+  position:absolute;
+  left:5px;
+  top:5px;
+  display:block;
+  border-left:3px solid #1d6bff;
+  border-bottom:3px solid #1d6bff;
+  border-radius:1px;
+  transform:rotate(-45deg);
+  transform-origin:center;
+ }
+}
+
 @media(prefers-reduced-motion:reduce){.gm-signin,.gm-signin-spinner{animation:none;transition:none}}
