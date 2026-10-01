@@ -6,103 +6,13 @@ import "./login.css";
 
 const REMEMBER_KEY="gym_manager_remembered_login_v1";
 const SUPPORT_EMAIL="atelierog.co@gmail.com";
-
-function GymManagerLogo(){
- return <svg className="gm-login-logo" viewBox="0 0 512 512" role="img" aria-label="Gym Manager logo">
-  <defs>
-   <linearGradient id="gm-platinum" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff"/><stop offset=".2" stopColor="#e9edf1"/><stop offset=".5" stopColor="#b8c0c8"/><stop offset=".78" stopColor="#f8fafc"/><stop offset="1" stopColor="#7d8792"/></linearGradient>
-   <filter id="gm-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-   <filter id="gm-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
-  </defs>
-  <rect width="512" height="512" rx="116" fill="#070a0e"/>
-  <rect x="22" y="22" width="468" height="468" rx="101" fill="none" stroke="#c5ccd3" strokeWidth="16" opacity=".18" filter="url(#gm-soft)"/>
-  <rect x="27" y="27" width="458" height="458" rx="96" fill="#0d1117" stroke="url(#gm-platinum)" strokeWidth="13" filter="url(#gm-glow)"/>
-  <rect x="43" y="43" width="426" height="426" rx="82" fill="#0b0f14" stroke="#eef2f5" strokeOpacity=".45" strokeWidth="2"/>
-  <g transform="translate(-38 -34) scale(1.15)" fill="url(#gm-platinum)" filter="url(#gm-glow)">
-   <path d="M120 296c0-55 37-91 91-91h83l-30 31h-49c-30 0-50 19-50 60s20 60 50 60h45v-35h-59l27-29h73v92h-89c-54 0-92-35-92-88z"/>
-   <path d="M270 238l42 48 44-48 34 31v86c0 13-9 23-22 23h-28v-73l-28 31-42-47z"/>
-  </g>
- </svg>;
-}
-
+function GymManagerLogo(){return <svg className="gm-login-logo" viewBox="0 0 512 512" role="img" aria-label="Gym Manager logo"><defs><linearGradient id="gm-platinum" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff"/><stop offset=".2" stopColor="#e9edf1"/><stop offset=".5" stopColor="#b8c0c8"/><stop offset=".78" stopColor="#f8fafc"/><stop offset="1" stopColor="#7d8792"/></linearGradient><filter id="gm-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="gm-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter></defs><rect width="512" height="512" rx="116" fill="#070a0e"/><rect x="22" y="22" width="468" height="468" rx="101" fill="none" stroke="#c5ccd3" strokeWidth="16" opacity=".18" filter="url(#gm-soft)"/><rect x="27" y="27" width="458" height="458" rx="96" fill="#0d1117" stroke="url(#gm-platinum)" strokeWidth="13" filter="url(#gm-glow)"/><rect x="43" y="43" width="426" height="426" rx="82" fill="#0b0f14" stroke="#eef2f5" strokeOpacity=".45" strokeWidth="2"/><g transform="translate(-38 -34) scale(1.15)" fill="url(#gm-platinum)" filter="url(#gm-glow)"><path d="M120 296c0-55 37-91 91-91h83l-30 31h-49c-30 0-50 19-50 60s20 60 50 60h45v-35h-59l27-29h73v92h-89c-54 0-92-35-92-88z"/><path d="M270 238l42 48 44-48 34 31v86c0 13-9 23-22 23h-28v-73l-28 31-42-47z"/></g></svg>}
 export default function Login({onLogin}){
- if(window.location.pathname==="/reset-password") return <PasswordReset/>;
- const [id,setId]=useState("");
- const [password,setPassword]=useState("");
- const [remember,setRemember]=useState(false);
- const [showPassword,setShowPassword]=useState(false);
- const [busy,setBusy]=useState(false);
- const [recoveryBusy,setRecoveryBusy]=useState(false);
- const [error,setError]=useState("");
- const [notice,setNotice]=useState("");
-
- useEffect(()=>{
-  try{
-   const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");
-   if(saved?.id){setId(saved.id);setRemember(true)}
-  }catch{}
- },[]);
-
- async function reportLoginError(message,code="LOGIN_ERROR"){
-  try{await supabase?.rpc("record_platform_error",{p_source:"login",p_operation:"sign_in",p_message:String(message||"Login error"),p_error_code:code,p_path:window.location.pathname})}catch{}
- }
-
- async function submit(e){
-  e.preventDefault();
-  setError("");setNotice("");
-  if(!supabase){setError("Secure sign-in is not configured yet.");return}
-  if(!id.trim()||!password){
-   const msg="Enter your Login ID and password.";
-   setError(msg);reportLoginError(msg,"VALIDATION_ERROR");return;
-  }
-  setBusy(true);
-  const cleanId=id.trim();
-  try{
-   const data=await signIn(cleanId,password);
-   if(remember)localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:cleanId}));
-   else localStorage.removeItem(REMEMBER_KEY);
-   onLogin(data.user);
-  }catch(err){
-   const raw=String(err?.message||"");
-   const msg=["This gym has been suspended.","This account is inactive. Contact your Gym Admin.","Your Gym Manager profile could not be found."].includes(raw)?raw:"Invalid Login ID or password.";
-   setError(msg);reportLoginError(msg,"AUTHENTICATION");
-  }finally{setBusy(false)}
- }
-
- async function forgotPassword(){
-  setError("");setNotice("");
-  if(!id.trim()){
-   setError("Enter your Email / Login ID first, then select Forgot password?");
-   return;
-  }
-  setRecoveryBusy(true);
-  try{
-   await sendPasswordReset(id);
-   setNotice(`If an account matches that Login ID, a secure password-reset email has been sent. Check your inbox and spam folder.`);
-  }catch(err){
-   const raw=String(err?.message||"");
-   const msg=raw.includes("configured")?raw:`Password recovery could not be started. Please contact ${SUPPORT_EMAIL}.`;
-   setError(msg);
-   reportLoginError(msg,"PASSWORD_RECOVERY");
-  }finally{setRecoveryBusy(false)}
- }
-
- return <main className="gm-login-shell">
-  <div className="gm-login-scene" aria-hidden="true"><div className="gm-arc"/><div className="gm-light gm-light-a"/><div className="gm-light gm-light-b"/><div className="gm-rack gm-rack-left"><i/><i/><i/></div><div className="gm-rack gm-rack-right"><i/><i/><i/></div><div className="gm-bench"/><div className="gm-floor"/></div>
-  <header className="gm-login-brand"><div className="gm-aog-mark">AOG</div><div><strong>ATELIER OG</strong><span>Business systems &amp; automation</span></div></header>
-  <section className="gm-login-content" aria-label="Gym Manager sign in">
-   <GymManagerLogo/><h1>Gym Manager</h1>
-   <form onSubmit={submit} className="gm-login-card">
-    <div className="gm-login-heading"><h2>Welcome to Gym Manager</h2><p>Sign in to access your account</p></div>
-    <label className="gm-field-label">Login ID<div className="gm-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m3 7 9 7 9-7"/></svg><input value={id} onChange={e=>setId(e.target.value)} placeholder="Email / Login ID" autoComplete="username" inputMode="email"/></div></label>
-    <label className="gm-field-label">Password<div className="gm-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type={showPassword?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="current-password"/><button type="button" className="gm-password-toggle" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"}>{showPassword?<svg viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 8.7 3.3 10 7a11.8 11.8 0 0 1-2.7 4.5M6.1 6.1C4.5 7.3 3.4 9 2 12c1.3 3.7 5 7 10 7 1.3 0 2.5 0 3.6-.6"/></svg>:<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>}</button></div></label>
-    <div className="gm-login-options"><label className="gm-remember"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/><span>Remember me</span></label><button type="button" className="gm-forgot" onClick={forgotPassword} disabled={recoveryBusy}>{recoveryBusy?"Sending…":"Forgot password?"}</button></div>
-    {error&&<div className="gm-error" role="alert">{error}</div>}
-    {notice&&<div className="gm-notice" role="status">{notice}</div>}
-    <button className="gm-signin" disabled={busy} aria-busy={busy}>{busy?<><span className="gm-signin-spinner"/>Signing in…</>:"Sign in"}</button>
-    <div className="gm-secure-row"><span/><div><svg viewBox="0 0 24 24"><path d="M6 10V7a6 6 0 0 1 12 0v3"/><rect x="4" y="10" width="16" height="11" rx="2"/></svg>Secure access</div><span/></div>
-    <div className="gm-login-footer">Powered by Atelier OG</div>
-   </form>
-  </section>
- </main>;
+ if(window.location.pathname==="/reset-password")return <PasswordReset/>;
+ const[id,setId]=useState("");const[password,setPassword]=useState("");const[remember,setRemember]=useState(false);const[showPassword,setShowPassword]=useState(false);const[busy,setBusy]=useState(false);const[recoveryBusy,setRecoveryBusy]=useState(false);const[error,setError]=useState("");const[notice,setNotice]=useState("");
+ useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(REMEMBER_KEY)||"null");if(saved?.id){setId(saved.id);setRemember(true)}}catch{}},[]);
+ async function reportLoginError(message,code="LOGIN_ERROR"){try{await supabase?.rpc("record_platform_error",{p_source:"login",p_operation:"sign_in",p_message:String(message||"Login error"),p_error_code:code,p_path:window.location.pathname})}catch{}}
+ async function submit(e){e.preventDefault();setError("");setNotice("");if(!supabase){setError("Secure sign-in is not configured yet.");return}if(!id.trim()||!password){const msg="Enter your Login ID and password.";setError(msg);reportLoginError(msg,"VALIDATION_ERROR");return}setBusy(true);const cleanId=id.trim();try{const data=await signIn(cleanId,password);if(remember)localStorage.setItem(REMEMBER_KEY,JSON.stringify({id:cleanId}));else localStorage.removeItem(REMEMBER_KEY);onLogin(data.user)}catch(err){const raw=String(err?.message||"");const msg=["This gym has been suspended.","This account is inactive. Contact your Gym Admin.","Your Gym Manager profile could not be found."].includes(raw)?raw:"Invalid Login ID or password.";setError(msg);reportLoginError(msg,"AUTHENTICATION")}finally{setBusy(false)}}
+ async function forgotPassword(){setError("");setNotice("");if(!id.trim()){setError("Enter your Email / Login ID first, then select Forgot password?");return}setRecoveryBusy(true);try{await sendPasswordReset(id);setNotice(`If an account matches that Login ID, a secure password-reset email has been sent. Check your inbox and spam folder.`)}catch(err){const raw=String(err?.message||"");const msg=raw.includes("configured")?raw:`Password recovery could not be started. Please contact ${SUPPORT_EMAIL}.`;setError(msg);reportLoginError(msg,"PASSWORD_RECOVERY")}finally{setRecoveryBusy(false)}}
+ return <main className="gm-login-shell"><div className="gm-login-scene" aria-hidden="true"><div className="gm-arc"/><div className="gm-light gm-light-a"/><div className="gm-light gm-light-b"/><div className="gm-rack gm-rack-left"><i/><i/><i/></div><div className="gm-rack gm-rack-right"><i/><i/><i/></div><div className="gm-bench"/><div className="gm-floor"/></div><header className="gm-login-brand"><div className="gm-aog-mark">AOG</div><div><strong>ATELIER OG</strong><span>Business systems &amp; automation</span></div></header><section className="gm-login-content" aria-label="Gym Manager sign in"><GymManagerLogo/><h1>Gym Manager</h1><form onSubmit={submit} className="gm-login-card"><div className="gm-login-heading"><h2>Welcome to Gym Manager</h2><p>Sign in to access your account</p></div><label className="gm-field-label">Login ID<div className="gm-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m3 7 9 7 9-7"/></svg><input value={id} onChange={e=>setId(e.target.value)} placeholder="Email / Login ID" autoComplete="username" inputMode="email"/></div></label><label className="gm-field-label">Password<div className="gm-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type={showPassword?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="current-password"/><button type="button" className="gm-password-toggle" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"}>{showPassword?<svg viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 8.7 3.3 10 7a11.8 11.8 0 0 1-2.7 4.5M6.1 6.1C4.5 7.3 3.4 9 2 12c1.3 3.7 5 7 10 7 1.3 0 2.5 0 3.6-.6"/></svg>:<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>}</button></div></label><div className="gm-login-options"><label className="gm-remember"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/><span>Remember me</span></label><button type="button" className="gm-forgot" onClick={forgotPassword} disabled={recoveryBusy}>{recoveryBusy?"Sending…":"Forgot password?"}</button></div>{error&&<div className="gm-error" role="alert">{error}</div>}{notice&&<div className="gm-notice" role="status">{notice}</div>}<button className="gm-signin" disabled={busy} aria-busy={busy}>{busy?<><span className="gm-signin-spinner"/>Signing in…</>:"Sign in"}</button><div className="gm-secure-row"><span/><div><svg viewBox="0 0 24 24"><path d="M6 10V7a6 6 0 0 1 12 0v3"/><rect x="4" y="10" width="16" height="11" rx="2"/></svg>Secure access</div><span/></div><div className="gm-login-footer">Powered by Atelier OG</div></form></section></main>;
 }
