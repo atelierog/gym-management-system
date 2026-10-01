@@ -32,6 +32,21 @@ async function enforce(pathname) {
 
 window.__GYM_MANAGER_ROUTE_GUARD__ = enforce;
 
+const nativePushState = window.history.pushState.bind(window.history);
+const nativeReplaceState = window.history.replaceState.bind(window.history);
+
+window.history.pushState = function guardedPushState(state, title, url) {
+  const next = new URL(url ?? window.location.href, window.location.origin);
+  nativePushState(state, title, next.href);
+  void enforce(next.pathname);
+};
+
+window.history.replaceState = function guardedReplaceState(state, title, url) {
+  const next = new URL(url ?? window.location.href, window.location.origin);
+  nativeReplaceState(state, title, next.href);
+  void enforce(next.pathname);
+};
+
 // Protect initial deep links before protected content can be shown.
 if (!isPublic(window.location.pathname)) {
   document.documentElement.dataset.routeGuardChecking = "true";
